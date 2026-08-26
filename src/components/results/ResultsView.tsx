@@ -66,7 +66,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
             onClick={() => setIsAddModalOpen(true)}
             className="apple-btn-primary"
           >
-            <PlusCircle className="h-4 w-4 mr-2" />
+            <PlusCircle className="h-4 w-4 mr-2 shrink-0" />
             <span>Record Exam Result</span>
           </button>
         </div>
@@ -74,7 +74,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         {/* Filters */}
         <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4 border-t border-[#f0f0f0]">
           <div className="relative">
-            <Search className="absolute left-3.5 top-3 h-4 w-4 text-[#86868b]" />
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#86868b]" />
             <input
               type="text"
               value={searchQuery}
@@ -116,7 +116,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
               onClick={() => setIsAddModalOpen(true)}
               className="apple-btn-primary"
             >
-              <PlusCircle className="h-4 w-4 mr-2" />
+              <PlusCircle className="h-4 w-4 mr-2 shrink-0" />
               <span>Record First Result</span>
             </button>
           </div>
@@ -162,7 +162,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                       className="apple-btn-secondary py-1.5 px-3 text-xs"
                       title="View & Print Official Marksheet"
                     >
-                      <Printer className="h-3.5 w-3.5 mr-1.5 text-[#0066cc]" />
+                      <Printer className="h-3.5 w-3.5 mr-1.5 text-[#0066cc] shrink-0" />
                       <span>Print Marksheet</span>
                     </button>
 

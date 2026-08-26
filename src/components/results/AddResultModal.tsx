@@ -264,7 +264,7 @@ export const AddResultModal: React.FC<AddResultModalProps> = ({
                 onClick={addSubjectRow}
                 className="inline-flex items-center space-x-1 text-xs font-semibold text-[#0066cc] bg-white px-2.5 py-1 rounded-full border border-[#e5e5ea] shadow-xs"
               >
-                <Plus className="h-3 w-3" />
+                <Plus className="h-3 w-3 shrink-0" />
                 <span>Add Subject</span>
               </button>
             </div>
@@ -352,7 +352,7 @@ export const AddResultModal: React.FC<AddResultModalProps> = ({
               type="submit"
               className="w-full apple-btn-primary py-3"
             >
-              <Save className="h-4 w-4 mr-2" />
+              <Save className="h-4 w-4 mr-2 shrink-0" />
               <span>Save & Publish Report Card</span>
             </button>
           </div>

@@ -61,7 +61,7 @@ export const ClassesView: React.FC<ClassesViewProps> = ({ onNavigateToStudents }
             onClick={() => setShowAddModal(true)}
             className="apple-btn-primary"
           >
-            <PlusCircle className="h-4 w-4 mr-2" />
+            <PlusCircle className="h-4 w-4 mr-2 shrink-0" />
             <span>Add Class Section</span>
           </button>
         </div>
@@ -90,7 +90,7 @@ export const ClassesView: React.FC<ClassesViewProps> = ({ onNavigateToStudents }
 
                 <div className="mt-4 bg-[#f5f5f7] rounded-xl p-3.5 flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <GraduationCap className="h-4 w-4 text-[#0066cc]" />
+                    <GraduationCap className="h-4 w-4 text-[#0066cc] shrink-0" />
                     <span className="text-xs font-medium text-[#86868b]">Enrolled Students</span>
                   </div>
                   <span className="text-sm font-semibold text-[#1d1d1f]">
@@ -112,7 +112,7 @@ export const ClassesView: React.FC<ClassesViewProps> = ({ onNavigateToStudents }
                   className="w-full inline-flex items-center justify-center space-x-2 bg-[#f5f5f7] hover:bg-[#e5e5ea] py-2 rounded-xl text-xs font-semibold text-[#1d1d1f] transition-colors"
                 >
                   <span>View Student Roster</span>
-                  <ArrowRight className="h-3.5 w-3.5 text-[#0066cc]" />
+                  <ArrowRight className="h-3.5 w-3.5 text-[#0066cc] shrink-0" />
                 </button>
               </div>
             </div>

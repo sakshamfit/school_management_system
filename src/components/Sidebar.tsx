@@ -69,7 +69,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setCurrentTab }) =
       {/* Role Profile Card */}
       <div className="mb-4 bg-[#f5f5f7] border border-[#e5e5ea] rounded-[14px] p-3.5">
         <div className="flex items-center space-x-2">
-          <ShieldCheck className="h-4 w-4 text-[#0066cc]" />
+          <ShieldCheck className="h-4 w-4 text-[#0066cc] shrink-0" />
           <span className="text-[11px] font-semibold tracking-tight text-[#1d1d1f]">
             {isPrincipal ? 'Principal Administration' : 'Classroom Faculty'}
           </span>
@@ -137,10 +137,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setCurrentTab }) =
           className="flex w-full items-center justify-between px-3 py-2 text-[13px] font-normal text-[#ff3b30] hover:bg-[#ff3b30]/10 rounded-full transition-colors"
         >
           <div className="flex items-center space-x-2.5">
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-4 w-4 shrink-0" />
             <span>Sign Out</span>
           </div>
-          <ChevronRight className="h-4 w-4 text-[#ff3b30]/60" />
+          <ChevronRight className="h-4 w-4 text-[#ff3b30]/60 shrink-0" />
         </button>
       </div>
     </aside>

@@ -112,7 +112,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               {isCloudSyncing ? (
                 <>
-                  <RefreshCw className="h-2.5 w-2.5 text-[#2997ff] animate-spin" />
+                  <RefreshCw className="h-2.5 w-2.5 text-[#2997ff] animate-spin shrink-0" />
                   <span className="text-[#2997ff] hidden sm:inline text-[11px]">Syncing</span>
                 </>
               ) : isCloudConnected ? (
@@ -125,7 +125,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </>
               ) : (
                 <>
-                  <Database className="h-2.5 w-2.5 text-[#86868b]" />
+                  <Database className="h-2.5 w-2.5 text-[#86868b] shrink-0" />
                   <span className="text-[#86868b] hidden sm:inline text-[11px]">Local</span>
                 </>
               )}
@@ -133,7 +133,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* Academic Session */}
             <div className="hidden sm:flex items-center space-x-1 text-[#86868b]">
-              <Calendar className="h-3 w-3" />
+              <Calendar className="h-3 w-3 shrink-0" />
               <span>{db.schoolInfo.currentAcademicYear}</span>
             </div>
 
@@ -159,7 +159,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="rounded-full bg-white text-[#ff3b30] px-3 py-1 text-xs font-semibold hover:bg-white/90 transition-all flex items-center space-x-1"
           >
             <span>Exit Preview</span>
-            <ArrowRight className="h-3 w-3" />
+            <ArrowRight className="h-3 w-3 shrink-0" />
           </button>
         </div>
       )}
@@ -182,7 +182,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="flex items-center space-x-2 bg-white/90 hover:bg-white border border-[#d2d2d7] rounded-full px-3.5 py-1.5 text-xs text-[#86868b] hover:text-[#1d1d1f] transition-all shadow-xs"
               title="Search student, roll number, admission..."
             >
-              <Search className="h-3.5 w-3.5 text-[#86868b]" />
+              <Search className="h-3.5 w-3.5 text-[#86868b] shrink-0" />
               <span className="hidden md:inline font-normal text-[13px]">Search directory</span>
               <kbd className="hidden lg:inline-block bg-[#f5f5f7] px-1.5 py-0.5 text-[10px] font-mono text-[#86868b] rounded-md border border-[#e5e5ea]">
                 ⌘K
@@ -196,10 +196,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 className="relative flex h-8 w-8 items-center justify-center rounded-full bg-black/5 hover:bg-black/10 text-[#1d1d1f] transition-colors"
                 aria-label="Notifications"
               >
-                <Bell className="h-4 w-4" />
+                <Bell className="h-4 w-4 shrink-0" />
                 {unreadNotificationCount > 0 && (
-                  <span className="absolute top-0 right-0 flex h-3 w-3 items-center justify-center rounded-full bg-[#0066cc] text-[8px] font-bold text-white">
-                    {unreadNotificationCount}
+                  <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#0066cc] px-1 text-[9px] font-bold leading-none text-white">
+                    {unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}
                   </span>
                 )}
               </button>
@@ -209,7 +209,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-[18px] border border-[#e5e5ea] bg-white p-4 shadow-xl z-50 animate-in fade-in">
                   <div className="flex items-center justify-between pb-3 border-b border-[#f0f0f0]">
                     <div className="flex items-center space-x-2">
-                      <Bell className="h-4 w-4 text-[#0066cc]" />
+                      <Bell className="h-4 w-4 text-[#0066cc] shrink-0" />
                       <h4 className="font-semibold text-[#1d1d1f] text-xs">Notifications</h4>
                       {unreadNotificationCount > 0 && (
                         <span className="bg-[#0066cc] text-white px-2 py-0.5 text-[10px] font-medium rounded-full">
@@ -312,7 +312,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       }}
                       className="w-full flex items-center space-x-2 px-3 py-2 text-xs font-medium text-[#1d1d1f] hover:bg-[#f5f5f7] rounded-lg transition-colors"
                     >
-                      <School className="h-4 w-4 text-[#0066cc]" />
+                      <School className="h-4 w-4 text-[#0066cc] shrink-0" />
                       <span>School Settings</span>
                     </button>
                   )}
@@ -324,7 +324,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     }}
                     className="w-full flex items-center space-x-2 px-3 py-2 text-xs font-medium text-[#1d1d1f] hover:bg-[#f5f5f7] rounded-lg transition-colors"
                   >
-                    <Laptop className="h-4 w-4 text-[#0066cc]" />
+                    <Laptop className="h-4 w-4 text-[#0066cc] shrink-0" />
                     <span>Desktop App & Setup</span>
                   </button>
 
@@ -335,7 +335,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     }}
                     className="w-full flex items-center space-x-2 px-3 py-2 text-xs font-medium text-[#ff3b30] hover:bg-[#ff3b30]/10 rounded-lg transition-colors mt-1"
                   >
-                    <LogOut className="h-4 w-4" />
+                    <LogOut className="h-4 w-4 shrink-0" />
                     <span>Sign Out</span>
                   </button>
                 </div>

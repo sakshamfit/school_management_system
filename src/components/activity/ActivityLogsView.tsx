@@ -56,7 +56,7 @@ export const ActivityLogsView: React.FC = () => {
             onClick={exportBackupJSON}
             className="apple-btn-primary"
           >
-            <Download className="h-4 w-4 mr-2" />
+            <Download className="h-4 w-4 mr-2 shrink-0" />
             <span>Export Full Backup</span>
           </button>
         </div>
@@ -74,7 +74,7 @@ export const ActivityLogsView: React.FC = () => {
       <div className="bg-white rounded-[18px] border border-[#e5e5ea] p-6 space-y-4 shadow-xs">
         <div className="flex items-center justify-between pb-3 border-b border-[#f0f0f0]">
           <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3.5 top-3 h-4 w-4 text-[#86868b]" />
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#86868b]" />
             <input
               type="text"
               value={searchQuery}
@@ -88,7 +88,7 @@ export const ActivityLogsView: React.FC = () => {
             onClick={resetDatabaseToDemo}
             className="text-xs font-semibold text-[#ff3b30] hover:underline flex items-center space-x-1.5 px-3 py-1.5 rounded-full hover:bg-[#ff3b30]/10 transition-colors"
           >
-            <RefreshCw className="h-3.5 w-3.5" />
+            <RefreshCw className="h-3.5 w-3.5 shrink-0" />
             <span>Reset Demo DB</span>
           </button>
         </div>

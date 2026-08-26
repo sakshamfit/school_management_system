@@ -158,7 +158,7 @@ export const AuthScreen: React.FC = () => {
                   Principal Email Address
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-3.5 h-4 w-4 text-[#86868b]" />
+                  <Mail className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#86868b]" />
                   <input
                     type="email"
                     required
@@ -175,7 +175,7 @@ export const AuthScreen: React.FC = () => {
                   Password
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-[#86868b]" />
+                  <Lock className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#86868b]" />
                   <input
                     type="password"
                     required
@@ -193,7 +193,7 @@ export const AuthScreen: React.FC = () => {
                 className="w-full apple-btn-primary py-3 mt-2 flex items-center justify-center space-x-2"
               >
                 <span>Access Principal Console</span>
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-4 w-4 shrink-0" />
               </button>
             </form>
           </div>
@@ -233,7 +233,7 @@ export const AuthScreen: React.FC = () => {
                   6-Digit Teacher Code
                 </label>
                 <div className="relative">
-                  <KeyRound className="absolute left-3.5 top-3.5 h-4 w-4 text-[#0066cc]" />
+                  <KeyRound className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#0066cc]" />
                   <input
                     type="text"
                     required
@@ -242,11 +242,11 @@ export const AuthScreen: React.FC = () => {
                     value={teacherCode}
                     onChange={e => setTeacherCode(e.target.value.toUpperCase())}
                     placeholder="e.g. 501001"
-                    className="apple-input pl-10 font-mono text-center text-lg font-bold tracking-widest"
+                    className="apple-input pl-10 pr-10 font-mono text-center text-lg font-bold tracking-widest"
                   />
                 </div>
                 <div className="mt-3 flex items-center justify-center space-x-1.5 text-xs text-[#86868b] bg-[#f5f5f7] py-2 px-3 rounded-xl text-center">
-                  <Smartphone className="h-3.5 w-3.5 text-[#30d158]" />
+                  <Smartphone className="h-3.5 w-3.5 text-[#30d158] shrink-0" />
                   <span>Works simultaneously on multiple teacher devices</span>
                 </div>
               </div>
@@ -256,7 +256,7 @@ export const AuthScreen: React.FC = () => {
                 className="w-full apple-btn-primary py-3 mt-2 flex items-center justify-center space-x-2"
               >
                 <span>Enter Teacher Portal</span>
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-4 w-4 shrink-0" />
               </button>
             </form>
           </div>

@@ -223,7 +223,7 @@ export const WhatsAppBroadcastModal: React.FC<WhatsAppBroadcastModalProps> = ({
           <div className="bg-[#f5f5f7] p-4 rounded-xl border border-[#e5e5ea]">
             <div className="flex items-center justify-between text-xs text-[#30d158] font-semibold mb-2">
               <span className="flex items-center gap-1">
-                <Sparkles className="h-3.5 w-3.5" />
+                <Sparkles className="h-3.5 w-3.5 shrink-0" />
                 Message Preview
               </span>
               <span className="text-[#86868b]">{targetStudents.length} Parents Targeted</span>
@@ -271,7 +271,7 @@ export const WhatsAppBroadcastModal: React.FC<WhatsAppBroadcastModalProps> = ({
                         onClick={() => handleOpenWhatsAppForStudent(student)}
                         className="apple-btn-secondary py-1.5 px-3 text-xs text-[#30d158] shrink-0"
                       >
-                        <Send className="h-3 w-3 mr-1.5" />
+                        <Send className="h-3 w-3 mr-1.5 shrink-0" />
                         <span>Send</span>
                       </button>
                     </div>

@@ -112,7 +112,7 @@ export const AcademicYearView: React.FC = () => {
       {/* Student Promotion Workspace */}
       <div className="bg-white rounded-[18px] border border-[#e5e5ea] p-6 space-y-5 shadow-xs">
         <div className="flex items-center space-x-2">
-          <Sparkles className="h-5 w-5 text-[#0066cc]" />
+          <Sparkles className="h-5 w-5 text-[#0066cc] shrink-0" />
           <h3 className="font-semibold text-sm text-[#1d1d1f]">
             Annual Promotion Workflow
           </h3>
@@ -258,7 +258,7 @@ export const AcademicYearView: React.FC = () => {
                 selectedStudentIds.length === 0 ? 'opacity-50 pointer-events-none' : ''
               }`}
             >
-              <Sparkles className="h-4 w-4 mr-2" />
+              <Sparkles className="h-4 w-4 mr-2 shrink-0" />
               <span>
                 Promote {selectedStudentIds.length} Students to {targetClassObj?.name}
               </span>

@@ -144,7 +144,7 @@ export const ClientHandoverModal: React.FC<ClientHandoverModalProps> = ({
                 : 'border-transparent text-[#86868b] hover:text-[#1d1d1f]'
             }`}
           >
-            <Monitor className="h-3.5 w-3.5" />
+            <Monitor className="h-3.5 w-3.5 shrink-0" />
             <span>1. Desktop App</span>
           </button>
 
@@ -156,7 +156,7 @@ export const ClientHandoverModal: React.FC<ClientHandoverModalProps> = ({
                 : 'border-transparent text-[#86868b] hover:text-[#1d1d1f]'
             }`}
           >
-            <ShieldCheck className="h-3.5 w-3.5" />
+            <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
             <span>2. Client Credentials</span>
           </button>
 
@@ -168,7 +168,7 @@ export const ClientHandoverModal: React.FC<ClientHandoverModalProps> = ({
                 : 'border-transparent text-[#86868b] hover:text-[#1d1d1f]'
             }`}
           >
-            <Server className="h-3.5 w-3.5" />
+            <Server className="h-3.5 w-3.5 shrink-0" />
             <span>3. Build & Deployment</span>
           </button>
 
@@ -180,7 +180,7 @@ export const ClientHandoverModal: React.FC<ClientHandoverModalProps> = ({
                 : 'border-transparent text-[#86868b] hover:text-[#1d1d1f]'
             }`}
           >
-            <Download className="h-3.5 w-3.5" />
+            <Download className="h-3.5 w-3.5 shrink-0" />
             <span>4. Database Backup & Restore</span>
           </button>
         </div>
@@ -207,7 +207,7 @@ export const ClientHandoverModal: React.FC<ClientHandoverModalProps> = ({
                   onClick={handleInstallClick}
                   className="apple-btn-primary py-2.5 px-5 text-xs whitespace-nowrap shadow-sm"
                 >
-                  <Download className="h-4 w-4 mr-2" />
+                  <Download className="h-4 w-4 mr-2 shrink-0" />
                   <span>{isInstalled ? 'App Already Running' : 'Install Desktop App'}</span>
                 </button>
               </div>
@@ -246,7 +246,7 @@ export const ClientHandoverModal: React.FC<ClientHandoverModalProps> = ({
               {/* Native Electron Executable Option */}
               <div className="bg-white p-4 rounded-xl border border-[#e5e5ea]">
                 <div className="flex items-center space-x-2 mb-1.5">
-                  <FileCode className="h-4 w-4 text-[#0066cc]" />
+                  <FileCode className="h-4 w-4 text-[#0066cc] shrink-0" />
                   <h5 className="font-semibold text-xs text-[#1d1d1f]">
                     Native Executable Packaging (.exe / .dmg)
                   </h5>
@@ -272,7 +272,7 @@ export const ClientHandoverModal: React.FC<ClientHandoverModalProps> = ({
               <div className="bg-white p-4 rounded-xl border border-[#e5e5ea]">
                 <div className="flex items-center justify-between pb-3 border-b border-[#f0f0f0] mb-3">
                   <div className="flex items-center space-x-2">
-                    <ShieldCheck className="h-4 w-4 text-[#0066cc]" />
+                    <ShieldCheck className="h-4 w-4 text-[#0066cc] shrink-0" />
                     <h5 className="font-semibold text-xs text-[#1d1d1f]">
                       Principal / Headmaster Super Admin Credentials
                     </h5>
@@ -315,7 +315,7 @@ export const ClientHandoverModal: React.FC<ClientHandoverModalProps> = ({
               <div className="bg-white p-4 rounded-xl border border-[#e5e5ea]">
                 <div className="flex items-center justify-between pb-3 border-b border-[#f0f0f0] mb-3">
                   <div className="flex items-center space-x-2">
-                    <Smartphone className="h-4 w-4 text-[#af52de]" />
+                    <Smartphone className="h-4 w-4 text-[#af52de] shrink-0" />
                     <h5 className="font-semibold text-xs text-[#1d1d1f]">
                       Teacher 6-Digit Access Codes (Classroom Portals)
                     </h5>
@@ -359,7 +359,7 @@ export const ClientHandoverModal: React.FC<ClientHandoverModalProps> = ({
             <div className="space-y-4">
               <div className="bg-white p-4 rounded-xl border border-[#e5e5ea] space-y-3 text-xs">
                 <div className="flex items-center space-x-2">
-                  <Server className="h-4 w-4 text-[#0066cc]" />
+                  <Server className="h-4 w-4 text-[#0066cc] shrink-0" />
                   <h5 className="font-semibold text-xs text-[#1d1d1f]">
                     Production Web Deployment (For Giving Live URL to Client)
                   </h5>
@@ -439,7 +439,7 @@ export const ClientHandoverModal: React.FC<ClientHandoverModalProps> = ({
                 <div className="bg-white p-5 rounded-xl border border-[#e5e5ea] flex flex-col justify-between space-y-3">
                   <div>
                     <div className="flex items-center space-x-2 mb-1.5">
-                      <Download className="h-4 w-4 text-[#0066cc]" />
+                      <Download className="h-4 w-4 text-[#0066cc] shrink-0" />
                       <h5 className="font-semibold text-xs text-[#1d1d1f]">
                         Export Complete School Backup
                       </h5>
@@ -452,7 +452,7 @@ export const ClientHandoverModal: React.FC<ClientHandoverModalProps> = ({
                     onClick={handleExportBackup}
                     className="apple-btn-primary py-2.5 px-4 text-xs w-full"
                   >
-                    <Download className="h-3.5 w-3.5 mr-1.5" />
+                    <Download className="h-3.5 w-3.5 mr-1.5 shrink-0" />
                     <span>Download JSON Backup</span>
                   </button>
                 </div>
@@ -461,7 +461,7 @@ export const ClientHandoverModal: React.FC<ClientHandoverModalProps> = ({
                 <div className="bg-white p-5 rounded-xl border border-[#e5e5ea] flex flex-col justify-between space-y-3">
                   <div>
                     <div className="flex items-center space-x-2 mb-1.5">
-                      <Upload className="h-4 w-4 text-[#30d158]" />
+                      <Upload className="h-4 w-4 text-[#30d158] shrink-0" />
                       <h5 className="font-semibold text-xs text-[#1d1d1f]">
                         Restore / Import Database
                       </h5>
@@ -471,7 +471,7 @@ export const ClientHandoverModal: React.FC<ClientHandoverModalProps> = ({
                     </p>
                   </div>
                   <label className="apple-btn-secondary py-2.5 px-4 text-xs w-full cursor-pointer text-center flex items-center justify-center">
-                    <Upload className="h-3.5 w-3.5 mr-1.5" />
+                    <Upload className="h-3.5 w-3.5 mr-1.5 shrink-0" />
                     <span>Upload & Restore Backup</span>
                     <input
                       type="file"

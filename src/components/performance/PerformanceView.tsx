@@ -57,7 +57,7 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({
         {/* Filters */}
         <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-[#f0f0f0]">
           <div className="relative">
-            <Search className="absolute left-3.5 top-3 h-4 w-4 text-[#86868b]" />
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#86868b]" />
             <input
               type="text"
               value={searchQuery}
