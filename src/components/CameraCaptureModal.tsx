@@ -173,7 +173,7 @@ export const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({
               <AlertCircle className="mx-auto mb-3 h-10 w-10 text-[#ff3b30]" />
               <p className="text-xs text-[#86868b] mb-4">{cameraError}</p>
               <label className="inline-flex cursor-pointer items-center space-x-2 apple-btn-primary">
-                <Upload className="h-4 w-4" />
+                <Upload className="h-4 w-4 shrink-0" />
                 <span>Upload From Device</span>
                 <input
                   type="file"
@@ -212,7 +212,7 @@ export const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({
                 onClick={handleRetake}
                 className="flex-1 apple-btn-secondary py-2.5 text-xs"
               >
-                <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+                <RefreshCw className="h-3.5 w-3.5 mr-1.5 shrink-0" />
                 <span>Retake</span>
               </button>
               <button
@@ -220,7 +220,7 @@ export const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({
                 onClick={handleConfirm}
                 className="flex-1 apple-btn-primary py-2.5 text-xs"
               >
-                <Check className="h-3.5 w-3.5 mr-1.5" />
+                <Check className="h-3.5 w-3.5 mr-1.5 shrink-0" />
                 <span>Confirm Photo</span>
               </button>
             </div>
@@ -228,7 +228,7 @@ export const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({
             <div className="flex items-center justify-around">
               {/* File upload fallback */}
               <label className="flex flex-col items-center justify-center cursor-pointer text-[#86868b] hover:text-[#1d1d1f] p-2">
-                <Upload className="h-5 w-5" />
+                <Upload className="h-5 w-5 shrink-0" />
                 <span className="text-[11px] mt-1 font-medium">Upload</span>
                 <input
                   type="file"
@@ -255,7 +255,7 @@ export const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({
                 disabled={Boolean(cameraError)}
                 className="flex flex-col items-center justify-center text-[#86868b] hover:text-[#1d1d1f] p-2 disabled:opacity-40"
               >
-                <RefreshCw className="h-5 w-5" />
+                <RefreshCw className="h-5 w-5 shrink-0" />
                 <span className="text-[11px] mt-1 font-medium">Flip</span>
               </button>
             </div>

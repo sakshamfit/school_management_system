@@ -112,7 +112,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                 >
                   <Icon className={`h-5 w-5 ${isActive ? 'text-[#0066cc]' : 'text-[#86868b]'}`} />
                   {item.badge && (
-                    <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#ff3b30] text-[9px] font-bold text-white">
+                    <span className="absolute -top-1 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#ff3b30] px-1 text-[9px] font-bold leading-none text-white">
                       {typeof item.badge === 'number' && item.badge > 99 ? '99+' : item.badge}
                     </span>
                   )}

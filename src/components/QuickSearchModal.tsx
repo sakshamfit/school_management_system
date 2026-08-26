@@ -124,7 +124,7 @@ export const QuickSearchModal: React.FC<QuickSearchModalProps> = ({
                             </span>
                           </div>
                         </div>
-                        <ArrowRight className="h-4 w-4 text-[#0066cc]" />
+                        <ArrowRight className="h-4 w-4 text-[#0066cc] shrink-0" />
                       </div>
                     ))}
                   </div>
@@ -158,7 +158,7 @@ export const QuickSearchModal: React.FC<QuickSearchModalProps> = ({
                             </span>
                           </div>
                         </div>
-                        <ArrowRight className="h-4 w-4 text-[#0066cc]" />
+                        <ArrowRight className="h-4 w-4 text-[#0066cc] shrink-0" />
                       </div>
                     ))}
                   </div>
@@ -182,12 +182,12 @@ export const QuickSearchModal: React.FC<QuickSearchModalProps> = ({
                         className="cursor-pointer flex items-center justify-between p-3 bg-white rounded-xl border border-[#e5e5ea] hover:border-[#0066cc]/40 hover:bg-[#0066cc]/5 transition-all"
                       >
                         <div className="flex items-center space-x-3">
-                          <BookOpen className="h-4 w-4 text-[#0066cc]" />
+                          <BookOpen className="h-4 w-4 text-[#0066cc] shrink-0" />
                           <span className="font-semibold text-xs text-[#1d1d1f]">
                             {c.name} - Section {c.section}
                           </span>
                         </div>
-                        <ArrowRight className="h-4 w-4 text-[#0066cc]" />
+                        <ArrowRight className="h-4 w-4 text-[#0066cc] shrink-0" />
                       </div>
                     ))}
                   </div>

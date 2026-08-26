@@ -170,7 +170,7 @@ export const AddPerformanceModal: React.FC<AddPerformanceModalProps> = ({
               type="submit"
               className="w-full bg-white text-black py-3 text-xs font-bold uppercase tracking-[1.5px] hover:bg-[#e6e6e6] active:scale-95 transition-all flex items-center justify-center space-x-2"
             >
-              <Save className="h-4 w-4 text-[#1c69d4]" />
+              <Save className="h-4 w-4 text-[#1c69d4] shrink-0" />
               <span>COMMIT OBSERVATION</span>
             </button>
           </div>

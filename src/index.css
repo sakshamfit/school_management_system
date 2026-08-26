@@ -40,6 +40,21 @@
   }
 }
 
+/*
+ * Custom component classes.
+ *
+ * These MUST live in the `components` cascade layer. Tailwind emits its
+ * utilities into `@layer utilities`, and `@import "tailwindcss"` declares the
+ * layer order as `theme, base, components, utilities`. Any rule written outside
+ * a layer is "unlayered", and unlayered normal declarations outrank *every*
+ * layered declaration regardless of specificity or source order.
+ *
+ * Left unlayered, these classes silently swallowed every Tailwind utility
+ * applied alongside them (e.g. `apple-input pl-10`, `apple-btn-primary text-xs`),
+ * which is what caused the search-field icons to be painted on top of the
+ * input text instead of the `pl-10` reserving room for them.
+ */
+@layer components {
 /* Apple Drop Shadow for Product/Subject imagery */
 .apple-product-shadow {
   box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.18), 0 4px 10px -4px rgba(0, 0, 0, 0.08);
@@ -231,6 +246,7 @@
   color: #ffffff;
   border-color: #0066cc;
 }
+} /* end @layer components */
 
 /* Apple Subtle Custom Scrollbar */
 ::-webkit-scrollbar {

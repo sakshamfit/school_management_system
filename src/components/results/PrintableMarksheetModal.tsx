@@ -72,7 +72,7 @@ export const PrintableMarksheetModal: React.FC<PrintableMarksheetModalProps> = (
               onClick={() => openWhatsAppMarksheetMessage(db.schoolInfo, targetStudent, result)}
               className="apple-btn-secondary py-1.5 px-3 text-xs text-[#30d158]"
             >
-              <Phone className="h-3.5 w-3.5 mr-1.5" />
+              <Phone className="h-3.5 w-3.5 mr-1.5 shrink-0" />
               <span>WhatsApp</span>
             </button>
 
@@ -80,7 +80,7 @@ export const PrintableMarksheetModal: React.FC<PrintableMarksheetModalProps> = (
               onClick={handlePrint}
               className="apple-btn-primary py-1.5 px-3.5 text-xs"
             >
-              <Printer className="h-3.5 w-3.5 mr-1.5" />
+              <Printer className="h-3.5 w-3.5 mr-1.5 shrink-0" />
               <span>Print / PDF</span>
             </button>
 

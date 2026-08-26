@@ -130,7 +130,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
                   }}
                   className="apple-btn-primary py-1.5 px-3.5 text-xs"
                 >
-                  <Award className="h-3.5 w-3.5 mr-1.5" />
+                  <Award className="h-3.5 w-3.5 mr-1.5 shrink-0" />
                   <span>Generate Marksheet</span>
                 </button>
 
@@ -139,7 +139,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
                     onClick={() => openWhatsAppFeeMessage(db.schoolInfo, student, feeAccount)}
                     className="apple-btn-secondary py-1.5 px-3 text-xs text-[#30d158]"
                   >
-                    <Phone className="h-3.5 w-3.5 mr-1.5" />
+                    <Phone className="h-3.5 w-3.5 mr-1.5 shrink-0" />
                     <span>WhatsApp Parent</span>
                   </button>
                 )}
@@ -149,7 +149,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
                     onClick={() => onOpenCollectFee(student)}
                     className="apple-btn-secondary py-1.5 px-3 text-xs"
                   >
-                    <CreditCard className="h-3.5 w-3.5 mr-1.5" />
+                    <CreditCard className="h-3.5 w-3.5 mr-1.5 shrink-0" />
                     <span>Collect Fee</span>
                   </button>
                 )}
@@ -293,7 +293,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
                           onClick={() => setViewingResult(studentResults[0])}
                           className="apple-btn-secondary py-1.5 px-3 text-xs"
                         >
-                          <Printer className="h-3.5 w-3.5 mr-1.5" />
+                          <Printer className="h-3.5 w-3.5 mr-1.5 shrink-0" />
                           <span>Print</span>
                         </button>
 
@@ -301,7 +301,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
                           onClick={() => openWhatsAppMarksheetMessage(db.schoolInfo, student, studentResults[0])}
                           className="apple-btn-secondary py-1.5 px-3 text-xs text-[#30d158]"
                         >
-                          <Phone className="h-3.5 w-3.5 mr-1.5" />
+                          <Phone className="h-3.5 w-3.5 mr-1.5 shrink-0" />
                           <span>WhatsApp</span>
                         </button>
                       </>
@@ -310,7 +310,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
                         onClick={() => setShowAddResultModal(true)}
                         className="apple-btn-primary py-1.5 px-3.5 text-xs"
                       >
-                        <Award className="h-3.5 w-3.5 mr-1.5" />
+                        <Award className="h-3.5 w-3.5 mr-1.5 shrink-0" />
                         <span>+ Generate Marksheet</span>
                       </button>
                     )}
@@ -521,7 +521,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
                     onClick={() => openWhatsAppFeeMessage(db.schoolInfo, student, feeAccount)}
                     className="apple-btn-secondary py-1.5 px-3 text-xs text-[#30d158]"
                   >
-                    <Phone className="h-3.5 w-3.5 mr-1.5" />
+                    <Phone className="h-3.5 w-3.5 mr-1.5 shrink-0" />
                     <span>Send WhatsApp Reminder</span>
                   </button>
 
@@ -530,7 +530,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
                       onClick={() => onOpenCollectFee(student)}
                       className="apple-btn-primary py-1.5 px-4 text-xs"
                     >
-                      <CreditCard className="h-3.5 w-3.5 mr-1.5" />
+                      <CreditCard className="h-3.5 w-3.5 mr-1.5 shrink-0" />
                       <span>Record Payment</span>
                     </button>
                   )}
@@ -582,7 +582,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
                   onClick={() => setShowAddResultModal(true)}
                   className="apple-btn-primary py-1.5 px-3.5 text-xs"
                 >
-                  <Award className="h-3.5 w-3.5 mr-1.5" />
+                  <Award className="h-3.5 w-3.5 mr-1.5 shrink-0" />
                   <span>+ Generate Marksheet</span>
                 </button>
               </div>
@@ -607,7 +607,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
                           onClick={() => setViewingResult(res)}
                           className="apple-btn-secondary py-1 px-2.5 text-xs"
                         >
-                          <Printer className="h-3.5 w-3.5 mr-1" />
+                          <Printer className="h-3.5 w-3.5 mr-1 shrink-0" />
                           <span>Print</span>
                         </button>
 
@@ -615,7 +615,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
                           onClick={() => openWhatsAppMarksheetMessage(db.schoolInfo, student, res)}
                           className="apple-btn-secondary py-1 px-2.5 text-xs text-[#30d158]"
                         >
-                          <Phone className="h-3.5 w-3.5 mr-1" />
+                          <Phone className="h-3.5 w-3.5 mr-1 shrink-0" />
                           <span>WhatsApp</span>
                         </button>
 
@@ -665,7 +665,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
                     onClick={() => onOpenAddPerformance(student)}
                     className="apple-btn-primary py-1.5 px-3.5 text-xs"
                   >
-                    <PlusCircle className="h-3.5 w-3.5 mr-1.5" />
+                    <PlusCircle className="h-3.5 w-3.5 mr-1.5 shrink-0" />
                     <span>+ Add Note</span>
                   </button>
                 )}

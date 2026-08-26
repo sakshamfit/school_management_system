@@ -131,7 +131,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
             className="apple-btn-primary"
           >
             <span>{isAttendanceSubmittedToday ? 'Review Roll-Call' : 'Take Roll-Call'}</span>
-            <ArrowRight className="h-4 w-4 ml-1.5" />
+            <ArrowRight className="h-4 w-4 ml-1.5 shrink-0" />
           </button>
         </div>
       </div>
@@ -187,7 +187,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
       <div className="bg-white rounded-[18px] border border-[#e5e5ea] p-6 shadow-xs">
         <div className="flex items-center justify-between pb-3 border-b border-[#f0f0f0]">
           <div className="flex items-center space-x-2">
-            <UserCheck className="h-4 w-4 text-[#0066cc]" />
+            <UserCheck className="h-4 w-4 text-[#0066cc] shrink-0" />
             <h3 className="font-semibold text-[#1d1d1f] text-sm">Faculty Check-In Record</h3>
           </div>
           {myAttendanceToday && (
@@ -245,7 +245,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
             className="text-xs font-medium text-[#0066cc] hover:underline inline-flex items-center space-x-1"
           >
             <span>Full Directory</span>
-            <ArrowRight className="h-3.5 w-3.5" />
+            <ArrowRight className="h-3.5 w-3.5 shrink-0" />
           </button>
         </div>
 
@@ -257,7 +257,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
               onClick={onOpenAddStudent}
               className="mt-3 apple-btn-primary"
             >
-              <PlusCircle className="h-4 w-4 mr-1.5" />
+              <PlusCircle className="h-4 w-4 mr-1.5 shrink-0" />
               <span>Enroll Student</span>
             </button>
           </div>

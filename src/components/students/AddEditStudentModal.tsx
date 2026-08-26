@@ -160,12 +160,12 @@ export const AddEditStudentModal: React.FC<AddEditStudentModalProps> = ({
                     onClick={() => setShowCameraModal(true)}
                     className="apple-btn-secondary py-1.5 px-3 text-xs"
                   >
-                    <Camera className="h-3.5 w-3.5 mr-1.5" />
+                    <Camera className="h-3.5 w-3.5 mr-1.5 shrink-0" />
                     <span>Camera</span>
                   </button>
 
                   <label className="apple-btn-secondary py-1.5 px-3 text-xs cursor-pointer">
-                    <Upload className="h-3.5 w-3.5 mr-1.5" />
+                    <Upload className="h-3.5 w-3.5 mr-1.5 shrink-0" />
                     <span>Upload File</span>
                     <input
                       type="file"
@@ -365,7 +365,7 @@ export const AddEditStudentModal: React.FC<AddEditStudentModalProps> = ({
                 type="submit"
                 className="w-full apple-btn-primary py-3"
               >
-                <Save className="h-4 w-4 mr-2" />
+                <Save className="h-4 w-4 mr-2 shrink-0" />
                 <span>{studentToEdit ? 'Save Changes' : 'Enroll Student'}</span>
               </button>
             </div>

@@ -92,7 +92,7 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
               onClick={onOpenAddStudent}
               className="apple-btn-primary"
             >
-              <PlusCircle className="h-4 w-4 mr-2" />
+              <PlusCircle className="h-4 w-4 mr-2 shrink-0" />
               <span>Enroll Student</span>
             </button>
           </div>
@@ -101,7 +101,7 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
         {/* Filters */}
         <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-[#f0f0f0]">
           <div className="sm:col-span-2 relative">
-            <Search className="absolute left-3.5 top-3 h-4 w-4 text-[#86868b]" />
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#86868b]" />
             <input
               type="text"
               value={searchQuery}
@@ -227,7 +227,7 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                       className="bg-[#f5f5f7] hover:bg-[#e5e5ea] px-3 py-1.5 rounded-full text-xs font-medium text-[#1d1d1f] flex items-center space-x-1.5 transition-colors"
                       title="Open Profile"
                     >
-                      <Eye className="h-3.5 w-3.5 text-[#0066cc]" />
+                      <Eye className="h-3.5 w-3.5 text-[#0066cc] shrink-0" />
                       <span>Profile</span>
                     </button>
 
@@ -289,7 +289,7 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm animate-in fade-in">
           <div className="w-full max-w-sm bg-white rounded-[20px] border border-[#e5e5ea] p-6 space-y-4 text-[#1d1d1f] shadow-2xl">
             <div className="flex items-center space-x-2.5 text-[#ff3b30]">
-              <Archive className="h-5 w-5" />
+              <Archive className="h-5 w-5 shrink-0" />
               <h4 className="font-semibold text-base">
                 Archive Student Record?
               </h4>

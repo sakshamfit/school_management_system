@@ -124,9 +124,9 @@ export const MobileQuickActionFAB: React.FC<MobileQuickActionFABProps> = ({
           }`}
         >
           {isOpen ? (
-            <X className="h-5 w-5 text-white" />
+            <X className="h-5 w-5 text-white shrink-0" />
           ) : (
-            <Plus className="h-6 w-6 text-white stroke-[2.2]" />
+            <Plus className="h-6 w-6 text-white stroke-[2.2] shrink-0" />
           )}
         </button>
       </div>

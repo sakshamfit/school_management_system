@@ -233,7 +233,7 @@ export const CollectFeeModal: React.FC<CollectFeeModalProps> = ({
                 className="h-4 w-4 rounded text-[#30d158] focus:ring-0"
               />
               <div className="flex items-center space-x-1.5 text-xs font-medium text-[#1d1d1f]">
-                <Phone className="h-3.5 w-3.5 text-[#30d158]" />
+                <Phone className="h-3.5 w-3.5 text-[#30d158] shrink-0" />
                 <span>Send WhatsApp Receipt to Parent</span>
               </div>
             </label>
@@ -244,7 +244,7 @@ export const CollectFeeModal: React.FC<CollectFeeModalProps> = ({
               type="submit"
               className="w-full apple-btn-primary py-3"
             >
-              <Save className="h-4 w-4 mr-2" />
+              <Save className="h-4 w-4 mr-2 shrink-0" />
               <span>Record Transaction (₹{amount})</span>
             </button>
           </div>

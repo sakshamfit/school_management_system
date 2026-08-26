@@ -101,7 +101,7 @@ export const AddTeacherModal: React.FC<AddTeacherModalProps> = ({
                   className="apple-btn-secondary py-1 px-2.5 text-xs text-[#0066cc]"
                   title="Generate new random 6-digit code"
                 >
-                  <RefreshCw className="h-3 w-3 mr-1" />
+                  <RefreshCw className="h-3 w-3 mr-1 shrink-0" />
                   <span>Random</span>
                 </button>
                 <button
@@ -109,14 +109,14 @@ export const AddTeacherModal: React.FC<AddTeacherModalProps> = ({
                   onClick={copyCode}
                   className="apple-btn-secondary py-1 px-2.5 text-xs"
                 >
-                  {copied ? <Check className="h-3 w-3 text-[#30d158] mr-1" /> : <Copy className="h-3 w-3 mr-1" />}
+                  {copied ? <Check className="h-3 w-3 text-[#30d158] mr-1 shrink-0" /> : <Copy className="h-3 w-3 mr-1 shrink-0" />}
                   <span>{copied ? 'Copied' : 'Copy'}</span>
                 </button>
               </div>
             </div>
 
             <div className="relative">
-              <KeyRound className="absolute left-3.5 top-2.5 h-4 w-4 text-[#0066cc]" />
+              <KeyRound className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#0066cc]" />
               <input
                 type="text"
                 required
@@ -211,7 +211,7 @@ export const AddTeacherModal: React.FC<AddTeacherModalProps> = ({
               type="submit"
               className="w-full apple-btn-primary py-3"
             >
-              <Save className="h-4 w-4 mr-2" />
+              <Save className="h-4 w-4 mr-2 shrink-0" />
               <span>Register Faculty Member</span>
             </button>
           </div>
