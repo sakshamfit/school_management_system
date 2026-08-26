@@ -8,6 +8,7 @@ import {
   AlertCircle,
   GraduationCap,
   Smartphone,
+  Building2,
 } from 'lucide-react';
 import { useSchool } from '../../context/SchoolContext';
 
@@ -72,8 +73,8 @@ export const AuthScreen: React.FC = () => {
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#0066cc]/10 text-2xl">
-                    🏛️
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#0066cc]/10 text-[#0066cc]">
+                    <Building2 className="h-6 w-6" />
                   </div>
                   <div>
                     <h2 className="text-base font-semibold text-[#1d1d1f] group-hover:text-[#0066cc] transition-colors">
@@ -97,8 +98,8 @@ export const AuthScreen: React.FC = () => {
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#af52de]/10 text-2xl">
-                    🎓
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#af52de]/10 text-[#af52de]">
+                    <GraduationCap className="h-6 w-6" />
                   </div>
                   <div>
                     <h2 className="text-base font-semibold text-[#1d1d1f] group-hover:text-[#0066cc] transition-colors">

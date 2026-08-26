@@ -12,8 +12,10 @@ import {
   RefreshCw,
   Search,
   CheckCircle2,
+  Laptop,
 } from 'lucide-react';
 import { useSchool } from '../context/SchoolContext';
+import { ClientHandoverModal } from './settings/ClientHandoverModal';
 
 interface NavbarProps {
   currentTab: string;
@@ -42,6 +44,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showHandoverModal, setShowHandoverModal] = useState(false);
 
   const getSectionTitle = (tab: string) => {
     switch (tab) {
@@ -316,6 +319,17 @@ export const Navbar: React.FC<NavbarProps> = ({
 
                   <button
                     onClick={() => {
+                      setShowHandoverModal(true);
+                      setShowUserMenu(false);
+                    }}
+                    className="w-full flex items-center space-x-2 px-3 py-2 text-xs font-medium text-[#1d1d1f] hover:bg-[#f5f5f7] rounded-lg transition-colors"
+                  >
+                    <Laptop className="h-4 w-4 text-[#0066cc]" />
+                    <span>Desktop App & Setup</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
                       logout();
                       setShowUserMenu(false);
                     }}
@@ -330,6 +344,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Client Handover & Desktop Modal */}
+      <ClientHandoverModal
+        isOpen={showHandoverModal}
+        onClose={() => setShowHandoverModal(false)}
+      />
     </header>
   );
 };

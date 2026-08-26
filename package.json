@@ -1,13 +1,19 @@
 {
-  "name": "react-example",
+  "name": "ms-public-school-portal",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "main": "electron.cjs",
   "type": "module",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
     "build": "vite build",
-    "preview": "vite preview",
-    "clean": "rm -rf dist server.js",
+    "preview": "vite preview --port=3000 --host=0.0.0.0",
+    "desktop": "electron .",
+    "desktop:build": "vite build && npx electron-builder",
+    "desktop:win": "vite build && npx electron-builder --win",
+    "desktop:mac": "vite build && npx electron-builder --mac",
+    "desktop:linux": "vite build && npx electron-builder --linux",
+    "clean": "rm -rf dist",
     "lint": "tsc --noEmit"
   },
   "dependencies": {

@@ -145,6 +145,7 @@ interface SchoolContextType {
   markNotificationAsRead: (id: string) => void;
   markAllNotificationsAsRead: () => void;
   resetDatabaseToDemo: () => void;
+  importFullDatabase: (importedDb: SchoolDatabase) => { success: boolean; error?: string };
 }
 
 const SchoolContext = createContext<SchoolContextType | undefined>(undefined);
@@ -1183,6 +1184,31 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     logActivity('DEMO_RESET', 'Reset school database to initial default demo data');
   };
 
+  const importFullDatabase = (importedDb: SchoolDatabase): { success: boolean; error?: string } => {
+    try {
+      if (!importedDb || typeof importedDb !== 'object') {
+        return { success: false, error: 'Invalid database format' };
+      }
+      if (!importedDb.schoolInfo || !Array.isArray(importedDb.students) || !Array.isArray(importedDb.classes)) {
+        return { success: false, error: 'Missing required school data fields (schoolInfo, students, classes)' };
+      }
+
+      setDb(importedDb);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(importedDb));
+      
+      // Sync imported objects to firestore
+      if (importedDb.schoolInfo) saveSchoolInfoToFirestore(importedDb.schoolInfo).catch(e => console.error(e));
+      importedDb.classes?.forEach(c => saveClassToFirestore(c).catch(e => console.error(e)));
+      importedDb.students?.forEach(s => saveStudentToFirestore(s).catch(e => console.error(e)));
+      importedDb.feeAccounts?.forEach(f => saveFeeAccountToFirestore(f).catch(e => console.error(e)));
+
+      logActivity('DATABASE_RESTORE', 'Restored complete school database from client backup file');
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Failed to import database' };
+    }
+  };
+
   const unreadNotificationCount = db.notifications.filter(n => !n.isRead).length;
 
   return (
@@ -1235,6 +1261,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         markNotificationAsRead,
         markAllNotificationsAsRead,
         resetDatabaseToDemo,
+        importFullDatabase,
       }}
     >
       {children}

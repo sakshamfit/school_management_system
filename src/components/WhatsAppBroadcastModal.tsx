@@ -4,6 +4,12 @@ import {
   X,
   Send,
   Sparkles,
+  AlertCircle,
+  CreditCard,
+  Calendar,
+  FileText,
+  Megaphone,
+  Phone,
 } from 'lucide-react';
 import { useSchool } from '../context/SchoolContext';
 
@@ -113,30 +119,34 @@ export const WhatsAppBroadcastModal: React.FC<WhatsAppBroadcastModalProps> = ({
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {[
-                { id: 'attendance', label: 'Absent Alert', icon: '🚨' },
-                { id: 'fee', label: 'Fee Reminder', icon: '💳' },
-                { id: 'holiday', label: 'Holiday Notice', icon: '🏖️' },
-                { id: 'exam', label: 'Exam Update', icon: '📝' },
-                { id: 'custom', label: 'Custom Notice', icon: '📢' },
-              ].map(tpl => (
-                <button
-                  key={tpl.id}
-                  onClick={() => {
-                    setTemplateType(tpl.id as any);
-                    if (tpl.id === 'attendance') setRecipientFilter('absent_today');
-                    else if (tpl.id === 'fee') setRecipientFilter('unpaid_fees');
-                    else setRecipientFilter('all');
-                  }}
-                  className={`flex items-center space-x-2 p-2.5 rounded-xl text-xs font-medium transition-all text-left border ${
-                    templateType === tpl.id
-                      ? 'bg-[#0066cc] text-white border-[#0066cc] shadow-xs'
-                      : 'bg-[#f5f5f7] text-[#1d1d1f] border-transparent hover:bg-[#e5e5ea]'
-                  }`}
-                >
-                  <span className="text-sm">{tpl.icon}</span>
-                  <span className="truncate">{tpl.label}</span>
-                </button>
-              ))}
+                { id: 'attendance', label: 'Absent Alert', icon: AlertCircle, color: 'text-[#ff3b30]' },
+                { id: 'fee', label: 'Fee Reminder', icon: CreditCard, color: 'text-[#ff9500]' },
+                { id: 'holiday', label: 'Holiday Notice', icon: Calendar, color: 'text-[#30d158]' },
+                { id: 'exam', label: 'Exam Update', icon: FileText, color: 'text-[#0066cc]' },
+                { id: 'custom', label: 'Custom Notice', icon: Megaphone, color: 'text-[#af52de]' },
+              ].map(tpl => {
+                const Icon = tpl.icon;
+                const isSelected = templateType === tpl.id;
+                return (
+                  <button
+                    key={tpl.id}
+                    onClick={() => {
+                      setTemplateType(tpl.id as any);
+                      if (tpl.id === 'attendance') setRecipientFilter('absent_today');
+                      else if (tpl.id === 'fee') setRecipientFilter('unpaid_fees');
+                      else setRecipientFilter('all');
+                    }}
+                    className={`flex items-center space-x-2 p-2.5 rounded-xl text-xs font-medium transition-all text-left border ${
+                      isSelected
+                        ? 'bg-[#0066cc] text-white border-[#0066cc] shadow-xs'
+                        : 'bg-[#f5f5f7] text-[#1d1d1f] border-transparent hover:bg-[#e5e5ea]'
+                    }`}
+                  >
+                    <Icon className={`h-4 w-4 shrink-0 ${isSelected ? 'text-white' : tpl.color}`} />
+                    <span className="truncate">{tpl.label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -249,8 +259,11 @@ export const WhatsAppBroadcastModal: React.FC<WhatsAppBroadcastModalProps> = ({
                             ({student.className}, Roll #{student.rollNumber})
                           </span>
                         </div>
-                        <p className="text-[11px] text-[#86868b] truncate">
-                          Parent: {student.parentName} • 📞 {student.parentPhone || 'No Phone'}
+                        <p className="text-[11px] text-[#86868b] truncate flex items-center gap-1 mt-0.5">
+                          <span>Parent: {student.parentName}</span>
+                          <span>•</span>
+                          <Phone className="h-3 w-3 text-[#30d158] inline shrink-0" />
+                          <span>{student.parentPhone || 'No Phone'}</span>
                         </p>
                       </div>
 
