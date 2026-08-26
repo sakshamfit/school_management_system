@@ -47,7 +47,7 @@ export const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({
     } catch (err: any) {
       console.warn('Camera access error:', err);
       setCameraError(
-        'Camera permission was not granted or camera is not available. You can upload a photo from your gallery instead.'
+        'Camera permission was not granted or camera is not available. You can upload a photo from your device instead.'
       );
     } finally {
       setIsLoading(false);
@@ -140,37 +140,39 @@ export const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm animate-in fade-in">
+      <div className="w-full max-w-md overflow-hidden bg-white rounded-[20px] border border-[#e5e5ea] shadow-2xl text-[#1d1d1f]">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-orange-100 bg-orange-50 px-5 py-4">
-          <div className="flex items-center space-x-2">
-            <Camera className="h-5 w-5 text-orange-600" />
-            <h3 className="font-semibold text-slate-800">
-              {studentName ? `Take Photo: ${studentName}` : 'Take Student Photo'}
+        <div className="flex items-center justify-between border-b border-[#f0f0f0] bg-white px-5 py-4">
+          <div className="flex items-center space-x-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#0066cc]/10 text-[#0066cc]">
+              <Camera className="h-4 w-4" />
+            </div>
+            <h3 className="font-semibold text-sm text-[#1d1d1f]">
+              {studentName ? `Photo: ${studentName}` : 'Capture Photo'}
             </h3>
           </div>
           <button
             onClick={handleClose}
-            className="rounded-full p-1 text-slate-400 hover:bg-orange-100 hover:text-slate-700"
+            className="w-8 h-8 rounded-full bg-[#f5f5f7] text-[#86868b] hover:text-[#1d1d1f] flex items-center justify-center transition-colors"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
         {/* Viewfinder / Preview */}
-        <div className="relative aspect-square w-full bg-slate-900 flex items-center justify-center overflow-hidden">
+        <div className="relative aspect-square w-full bg-[#1d1d1f] flex items-center justify-center overflow-hidden">
           {capturedImage ? (
             <img
               src={capturedImage}
-              alt="Captured Student Preview"
+              alt="Captured"
               className="h-full w-full object-cover"
             />
           ) : cameraError ? (
             <div className="p-6 text-center text-white">
-              <AlertCircle className="mx-auto mb-3 h-12 w-12 text-amber-400" />
-              <p className="text-sm font-medium">{cameraError}</p>
-              <label className="mt-4 inline-flex cursor-pointer items-center space-x-2 rounded-xl bg-orange-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-orange-700">
+              <AlertCircle className="mx-auto mb-3 h-10 w-10 text-[#ff3b30]" />
+              <p className="text-xs text-[#86868b] mb-4">{cameraError}</p>
+              <label className="inline-flex cursor-pointer items-center space-x-2 apple-btn-primary">
                 <Upload className="h-4 w-4" />
                 <span>Upload From Device</span>
                 <input
@@ -190,10 +192,10 @@ export const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({
                 muted
                 className="h-full w-full object-cover"
               />
-              {/* Center Portrait Guide Frame */}
-              <div className="pointer-events-none absolute inset-8 rounded-full border-2 border-dashed border-white/60 shadow-[0_0_0_9999px_rgba(0,0,0,0.3)]"></div>
-              <div className="pointer-events-none absolute bottom-4 text-center text-xs text-white/80 drop-shadow">
-                Position face inside the circle
+              {/* Reticle */}
+              <div className="pointer-events-none absolute inset-10 rounded-full border-2 border-dashed border-white/60"></div>
+              <div className="pointer-events-none absolute bottom-4 text-center text-xs font-medium text-white/90 bg-black/50 px-3 py-1 rounded-full backdrop-blur-xs">
+                Align face inside the circle
               </div>
             </>
           )}
@@ -202,32 +204,32 @@ export const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({
         </div>
 
         {/* Action Controls */}
-        <div className="border-t border-slate-100 bg-white p-4">
+        <div className="bg-white p-4">
           {capturedImage ? (
             <div className="flex items-center justify-between gap-3">
               <button
                 type="button"
                 onClick={handleRetake}
-                className="flex-1 inline-flex items-center justify-center space-x-2 rounded-xl border border-slate-200 bg-slate-50 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+                className="flex-1 apple-btn-secondary py-2.5 text-xs"
               >
-                <RefreshCw className="h-4 w-4" />
+                <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
                 <span>Retake</span>
               </button>
               <button
                 type="button"
                 onClick={handleConfirm}
-                className="flex-1 inline-flex items-center justify-center space-x-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 py-3 text-sm font-semibold text-white shadow-md hover:from-orange-600 hover:to-amber-700"
+                className="flex-1 apple-btn-primary py-2.5 text-xs"
               >
-                <Check className="h-4 w-4" />
-                <span>Use This Photo</span>
+                <Check className="h-3.5 w-3.5 mr-1.5" />
+                <span>Confirm Photo</span>
               </button>
             </div>
           ) : (
             <div className="flex items-center justify-around">
               {/* File upload fallback */}
-              <label className="flex flex-col items-center justify-center cursor-pointer text-slate-500 hover:text-orange-600 p-2">
+              <label className="flex flex-col items-center justify-center cursor-pointer text-[#86868b] hover:text-[#1d1d1f] p-2">
                 <Upload className="h-5 w-5" />
-                <span className="text-[11px] mt-1 font-medium">Gallery</span>
+                <span className="text-[11px] mt-1 font-medium">Upload</span>
                 <input
                   type="file"
                   accept="image/*"
@@ -241,9 +243,9 @@ export const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({
                 type="button"
                 onClick={takePhoto}
                 disabled={Boolean(cameraError) || isLoading}
-                className="flex h-16 w-16 items-center justify-center rounded-full border-4 border-orange-200 bg-orange-600 p-1 text-white shadow-lg active:scale-95 disabled:opacity-50"
+                className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-[#e5e5ea] bg-white p-1 shadow-sm active:scale-95 disabled:opacity-50"
               >
-                <div className="h-12 w-12 rounded-full border-2 border-white bg-orange-500 hover:bg-orange-400"></div>
+                <div className="h-10 w-10 rounded-full bg-[#0066cc] hover:bg-[#0077ed] transition-colors"></div>
               </button>
 
               {/* Switch Camera */}
@@ -251,7 +253,7 @@ export const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({
                 type="button"
                 onClick={toggleFacingMode}
                 disabled={Boolean(cameraError)}
-                className="flex flex-col items-center justify-center text-slate-500 hover:text-orange-600 p-2 disabled:opacity-40"
+                className="flex flex-col items-center justify-center text-[#86868b] hover:text-[#1d1d1f] p-2 disabled:opacity-40"
               >
                 <RefreshCw className="h-5 w-5" />
                 <span className="text-[11px] mt-1 font-medium">Flip</span>

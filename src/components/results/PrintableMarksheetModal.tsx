@@ -2,13 +2,8 @@ import React from 'react';
 import {
   X,
   Printer,
-  Share2,
   Award,
-  Calendar,
-  User,
   GraduationCap,
-  CheckCircle2,
-  FileText,
   Phone,
 } from 'lucide-react';
 import { useSchool } from '../../context/SchoolContext';
@@ -56,37 +51,42 @@ export const PrintableMarksheetModal: React.FC<PrintableMarksheetModalProps> = (
   const isPassed = result.percentage >= 33;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-2 sm:p-4 backdrop-blur-sm animate-in fade-in overflow-y-auto print:p-0 print:bg-white print:static">
-      <div className="w-full max-w-3xl rounded-3xl bg-white shadow-2xl overflow-hidden my-auto max-h-[94vh] flex flex-col print:max-h-none print:shadow-none print:rounded-none print:w-full print:max-w-none">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-2 sm:p-4 backdrop-blur-sm animate-in fade-in overflow-y-auto print:p-0 print:bg-white print:static">
+      <div className="w-full max-w-3xl bg-white rounded-[20px] border border-[#e5e5ea] shadow-2xl overflow-hidden my-auto max-h-[94vh] flex flex-col print:max-h-none print:shadow-none print:border-none print:w-full print:max-w-none text-[#1d1d1f]">
         {/* Top Control Bar (Hidden in Print) */}
-        <div className="flex items-center justify-between bg-slate-900 px-5 py-3.5 text-white shrink-0 print:hidden">
-          <div className="flex items-center space-x-2">
-            <Award className="h-5 w-5 text-amber-400" />
-            <span className="text-xs font-black uppercase tracking-wider text-slate-200">
-              Student Marksheet / Report Card Preview
-            </span>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#f0f0f0] bg-white shrink-0 print:hidden">
+          <div className="flex items-center space-x-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#af52de]/10 text-[#af52de]">
+              <Award className="h-4 w-4" />
+            </div>
+            <div>
+              <span className="text-sm font-semibold text-[#1d1d1f]">
+                Student Evaluation Dossier
+              </span>
+              <p className="text-xs text-[#86868b]">{result.studentName} • {result.className}</p>
+            </div>
           </div>
 
           <div className="flex items-center space-x-2">
             <button
               onClick={() => openWhatsAppMarksheetMessage(db.schoolInfo, targetStudent, result)}
-              className="inline-flex items-center space-x-1.5 rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-700 active:scale-95 transition-all shadow-xs"
+              className="apple-btn-secondary py-1.5 px-3 text-xs text-[#30d158]"
             >
-              <Phone className="h-3.5 w-3.5" />
-              <span>WhatsApp Parent</span>
+              <Phone className="h-3.5 w-3.5 mr-1.5" />
+              <span>WhatsApp</span>
             </button>
 
             <button
               onClick={handlePrint}
-              className="inline-flex items-center space-x-1.5 rounded-xl bg-orange-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-orange-600 active:scale-95 transition-all shadow-xs"
+              className="apple-btn-primary py-1.5 px-3.5 text-xs"
             >
-              <Printer className="h-3.5 w-3.5" />
+              <Printer className="h-3.5 w-3.5 mr-1.5" />
               <span>Print / PDF</span>
             </button>
 
             <button
               onClick={onClose}
-              className="rounded-full bg-white/20 p-1.5 text-white hover:bg-white/30 transition-colors ml-2"
+              className="w-8 h-8 rounded-full bg-[#f5f5f7] text-[#86868b] hover:text-[#1d1d1f] flex items-center justify-center transition-colors ml-1"
             >
               <X className="h-4 w-4" />
             </button>
@@ -96,31 +96,26 @@ export const PrintableMarksheetModal: React.FC<PrintableMarksheetModalProps> = (
         {/* Printable Marksheet Container */}
         <div
           id="official-report-card"
-          className="flex-1 overflow-y-auto p-6 sm:p-10 bg-white text-slate-900 print:overflow-visible print:p-8"
+          className="flex-1 overflow-y-auto p-6 sm:p-8 bg-white text-[#1d1d1f] print:overflow-visible print:p-8"
         >
           {/* Institutional Border Frame */}
-          <div className="border-4 border-double border-slate-800 p-6 sm:p-8 rounded-2xl relative">
-            {/* Background Emblem Watermark */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-4 pointer-events-none">
-              <GraduationCap className="h-72 w-72 text-slate-900" />
-            </div>
-
+          <div className="border border-[#e5e5ea] rounded-2xl p-6 sm:p-8 relative">
             {/* School Header */}
-            <div className="text-center pb-5 border-b-2 border-slate-800">
-              <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-orange-600 text-white font-black text-2xl shadow-md mb-2">
+            <div className="text-center pb-5 border-b border-[#e5e5ea]">
+              <div className="inline-flex items-center justify-center h-12 w-12 rounded-2xl bg-[#0066cc]/10 text-[#0066cc] font-bold text-base mb-2">
                 MS
               </div>
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-950 uppercase font-serif">
-                {db.schoolInfo.name || 'M.S. PUBLIC SCHOOL'}
+              <h1 className="text-xl font-semibold tracking-tight text-[#1d1d1f]">
+                {db.schoolInfo.name || 'M.S. Public School'}
               </h1>
-              <p className="text-xs font-bold text-slate-600 italic mt-0.5">
+              <p className="text-xs text-[#86868b] mt-0.5">
                 {db.schoolInfo.tagline || 'Knowledge is Power • Empowering Future Generations'}
               </p>
-              <p className="text-[11px] text-slate-500 font-medium mt-1">
+              <p className="text-[11px] text-[#86868b] mt-1">
                 {db.schoolInfo.address || 'Main Campus, School Road'} • Ph: {db.schoolInfo.phone} • Email: {db.schoolInfo.email}
               </p>
-              <div className="mt-2 inline-flex items-center space-x-3 text-[10px] font-bold text-slate-600 bg-slate-100 px-3 py-1 rounded-full uppercase tracking-wider">
-                <span>Affiliation No: {db.schoolInfo.affiliationNumber || 'CBSE/AFF/2024/93821'}</span>
+              <div className="mt-2.5 inline-flex items-center space-x-3 text-[11px] font-medium text-[#86868b] bg-[#f5f5f7] px-3 py-1 rounded-full">
+                <span>Affiliation: {db.schoolInfo.affiliationNumber || 'CBSE/AFF/2024/93821'}</span>
                 <span>•</span>
                 <span>Session: {result.academicYear}</span>
               </div>
@@ -128,104 +123,104 @@ export const PrintableMarksheetModal: React.FC<PrintableMarksheetModalProps> = (
 
             {/* Title */}
             <div className="text-center my-4">
-              <span className="inline-block bg-slate-900 text-white px-5 py-1 rounded-full text-xs font-black uppercase tracking-widest">
+              <span className="inline-block bg-[#0066cc]/10 text-[#0066cc] px-4 py-1 rounded-full text-xs font-semibold">
                 Official Academic Performance Report
               </span>
-              <h2 className="text-base font-extrabold text-slate-800 mt-1">
+              <h2 className="text-sm font-semibold text-[#1d1d1f] mt-1">
                 {result.examName}
               </h2>
             </div>
 
             {/* Student Biodata Box */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs mb-5">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-[#f5f5f7] p-4 rounded-xl text-xs mb-5 border border-[#e5e5ea]">
               <div>
-                <span className="text-[10px] font-bold uppercase text-slate-400 block">Student Name</span>
-                <span className="font-extrabold text-slate-900 text-sm">{result.studentName}</span>
+                <span className="text-[11px] text-[#86868b] block">Student Name</span>
+                <span className="font-semibold text-[#1d1d1f] text-xs">{result.studentName}</span>
               </div>
 
               <div>
-                <span className="text-[10px] font-bold uppercase text-slate-400 block">Class & Section</span>
-                <span className="font-bold text-slate-800">{result.className}</span>
+                <span className="text-[11px] text-[#86868b] block">Class & Section</span>
+                <span className="font-semibold text-[#1d1d1f] text-xs">{result.className}</span>
               </div>
 
               <div>
-                <span className="text-[10px] font-bold uppercase text-slate-400 block">Roll Number</span>
-                <span className="font-bold text-slate-800 font-mono text-sm">#{result.rollNumber}</span>
+                <span className="text-[11px] text-[#86868b] block">Roll Number</span>
+                <span className="font-semibold text-[#1d1d1f] text-xs">#{result.rollNumber}</span>
               </div>
 
               <div>
-                <span className="text-[10px] font-bold uppercase text-slate-400 block">Admission No</span>
-                <span className="font-bold text-slate-800 font-mono">{targetStudent.admissionNumber || 'MSPS-2025'}</span>
+                <span className="text-[11px] text-[#86868b] block">Admission No</span>
+                <span className="font-semibold text-[#1d1d1f] text-xs">{targetStudent.admissionNumber || 'MSPS-2025'}</span>
               </div>
 
               <div>
-                <span className="text-[10px] font-bold uppercase text-slate-400 block">Father / Guardian</span>
-                <span className="font-bold text-slate-800">{targetStudent.parentName || '—'}</span>
+                <span className="text-[11px] text-[#86868b] block">Parent / Guardian</span>
+                <span className="font-semibold text-[#1d1d1f] text-xs">{targetStudent.parentName || '—'}</span>
               </div>
 
               <div>
-                <span className="text-[10px] font-bold uppercase text-slate-400 block">Date of Issue</span>
-                <span className="font-bold text-slate-800">{formatDate(result.examDate || new Date().toISOString())}</span>
+                <span className="text-[11px] text-[#86868b] block">Date of Issue</span>
+                <span className="font-semibold text-[#1d1d1f] text-xs">{formatDate(result.examDate || new Date().toISOString())}</span>
               </div>
 
               <div>
-                <span className="text-[10px] font-bold uppercase text-slate-400 block">Academic Status</span>
+                <span className="text-[11px] text-[#86868b] block">Result Status</span>
                 <span
-                  className={`font-black text-xs uppercase ${
-                    isPassed ? 'text-emerald-700' : 'text-rose-700'
+                  className={`font-semibold text-xs ${
+                    isPassed ? 'text-[#30d158]' : 'text-[#ff3b30]'
                   }`}
                 >
-                  {isPassed ? 'PROMOTED / PASS' : 'NEEDS IMPROVEMENT'}
+                  {isPassed ? 'Qualified & Promoted' : 'Requires Remediation'}
                 </span>
               </div>
 
               <div>
-                <span className="text-[10px] font-bold uppercase text-slate-400 block">Overall Rank / Grade</span>
-                <span className="font-black text-orange-600 text-sm">Grade {result.grade}</span>
+                <span className="text-[11px] text-[#86868b] block">Overall Grade</span>
+                <span className="font-semibold text-[#1d1d1f] text-xs">Grade {result.grade}</span>
               </div>
             </div>
 
             {/* Subject Marks Table */}
             <div className="overflow-x-auto mb-5">
-              <table className="w-full text-xs text-left border border-slate-300">
+              <table className="w-full text-xs text-left">
                 <thead>
-                  <tr className="bg-slate-800 text-white font-bold uppercase text-[10px] tracking-wider">
-                    <th className="p-2.5 border border-slate-400 w-12 text-center">S.No</th>
-                    <th className="p-2.5 border border-slate-400">Subject Name</th>
-                    <th className="p-2.5 border border-slate-400 text-center w-24">Max Marks</th>
-                    <th className="p-2.5 border border-slate-400 text-center w-24">Pass Marks</th>
-                    <th className="p-2.5 border border-slate-400 text-center w-28">Marks Obtained</th>
-                    <th className="p-2.5 border border-slate-400 text-center w-20">Grade</th>
+                  <tr className="bg-[#f5f5f7] text-[#86868b] font-semibold text-[11px]">
+                    <th className="p-2.5 rounded-l-lg w-12 text-center">#</th>
+                    <th className="p-2.5">Subject</th>
+                    <th className="p-2.5 text-center w-24">Max Marks</th>
+                    <th className="p-2.5 text-center w-24">Pass Marks</th>
+                    <th className="p-2.5 text-center w-28">Obtained</th>
+                    <th className="p-2.5 rounded-r-lg text-center w-20">Grade</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200 font-medium">
+                <tbody className="divide-y divide-[#f0f0f0]">
                   {result.subjects.map((sub, idx) => {
                     const passMark = Math.ceil(sub.maxMarks * 0.33);
                     const subPassed = sub.obtainedMarks >= passMark;
                     return (
-                      <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
-                        <td className="p-2.5 border border-slate-200 text-center font-bold text-slate-500">
+                      <tr key={idx} className="hover:bg-[#fafafa]">
+                        <td className="p-2.5 text-center text-[#86868b]">
                           {idx + 1}
                         </td>
-                        <td className="p-2.5 border border-slate-200 font-bold text-slate-900">
+                        <td className="p-2.5 font-semibold text-[#1d1d1f]">
                           {sub.subject}
                         </td>
-                        <td className="p-2.5 border border-slate-200 text-center font-bold text-slate-700">
+                        <td className="p-2.5 text-center text-[#86868b]">
                           {sub.maxMarks}
                         </td>
-                        <td className="p-2.5 border border-slate-200 text-center text-slate-500 font-mono">
+                        <td className="p-2.5 text-center text-[#86868b]">
                           {passMark}
                         </td>
-                        <td className="p-2.5 border border-slate-200 text-center font-black text-slate-900">
+                        <td className="p-2.5 text-center font-semibold">
                           <span
                             className={
-                              subPassed ? 'text-slate-900' : 'text-rose-600 font-bold'
+                              subPassed ? 'text-[#1d1d1f]' : 'text-[#ff3b30]'
                             }
                           >
                             {sub.obtainedMarks}
                           </span>
                         </td>
-                        <td className="p-2.5 border border-slate-200 text-center font-black text-purple-700">
+                        <td className="p-2.5 text-center font-semibold text-[#0066cc]">
                           {sub.grade}
                         </td>
                       </tr>
@@ -233,20 +228,20 @@ export const PrintableMarksheetModal: React.FC<PrintableMarksheetModalProps> = (
                   })}
                 </tbody>
                 <tfoot>
-                  <tr className="bg-slate-100 font-black text-xs border-t-2 border-slate-800">
-                    <td colSpan={2} className="p-3 border border-slate-300 text-right uppercase tracking-wider">
-                      GRAND TOTAL:
+                  <tr className="bg-[#f5f5f7] font-semibold text-xs rounded-xl">
+                    <td colSpan={2} className="p-2.5 rounded-l-xl text-right text-[#1d1d1f]">
+                      Total Aggregate:
                     </td>
-                    <td className="p-3 border border-slate-300 text-center font-black">
+                    <td className="p-2.5 text-center text-[#1d1d1f]">
                       {result.totalMaxMarks}
                     </td>
-                    <td className="p-3 border border-slate-300 text-center text-slate-500">
+                    <td className="p-2.5 text-center text-[#86868b]">
                       {Math.ceil(result.totalMaxMarks * 0.33)}
                     </td>
-                    <td className="p-3 border border-slate-300 text-center text-sm font-black text-orange-700">
+                    <td className="p-2.5 text-center font-semibold text-[#1d1d1f]">
                       {result.totalMarks}
                     </td>
-                    <td className="p-3 border border-slate-300 text-center font-black text-purple-800">
+                    <td className="p-2.5 rounded-r-xl text-center font-semibold text-[#0066cc]">
                       {result.grade}
                     </td>
                   </tr>
@@ -255,60 +250,60 @@ export const PrintableMarksheetModal: React.FC<PrintableMarksheetModalProps> = (
             </div>
 
             {/* Score Summary Box */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-orange-50/50 p-4 rounded-xl border border-orange-200 text-xs mb-5">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-[#f5f5f7] p-4 rounded-xl text-xs mb-5 border border-[#e5e5ea]">
               <div>
-                <span className="text-[10px] font-bold uppercase text-orange-800 block">Total Percentage</span>
-                <p className="text-xl font-black text-orange-950">{result.percentage}%</p>
+                <span className="text-[11px] text-[#86868b] block">Percentage Score</span>
+                <p className="text-base font-semibold text-[#1d1d1f]">{result.percentage}%</p>
               </div>
 
               <div>
-                <span className="text-[10px] font-bold uppercase text-orange-800 block">Overall Result</span>
+                <span className="text-[11px] text-[#86868b] block">Final Determination</span>
                 <p
-                  className={`text-base font-black ${
-                    isPassed ? 'text-emerald-700' : 'text-rose-700'
+                  className={`text-xs font-semibold ${
+                    isPassed ? 'text-[#30d158]' : 'text-[#ff3b30]'
                   }`}
                 >
-                  {isPassed ? 'PASSED & PROMOTED' : 'DETENTION / RE-APPEAR'}
+                  {isPassed ? 'Qualified & Promoted' : 'Requires Retest'}
                 </p>
               </div>
 
               <div>
-                <span className="text-[10px] font-bold uppercase text-orange-800 block">Grading Scale (CBSE)</span>
-                <p className="text-[11px] font-bold text-slate-700 mt-0.5">
-                  A+ (90-100%) • A (80-89%) • B (70-79%) • C (50-69%) • D (33-49%)
+                <span className="text-[11px] text-[#86868b] block">Benchmark Scale</span>
+                <p className="text-[11px] text-[#86868b] mt-0.5">
+                  A+ (90-100%) • A (80-89%) • B (70-79%) • C (50-69%)
                 </p>
               </div>
             </div>
 
             {/* Remarks */}
             {result.remarks && (
-              <div className="mb-6 p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs">
-                <span className="font-extrabold text-slate-800 uppercase text-[10px] block mb-1">
-                  Teacher's Comprehensive Observation & Remarks:
+              <div className="mb-6 p-4 bg-[#f5f5f7] rounded-xl border border-[#e5e5ea] text-xs">
+                <span className="font-semibold text-[#1d1d1f] text-[11px] block mb-1">
+                  Teacher Observation & Remarks:
                 </span>
-                <p className="font-medium text-slate-700 italic">"{result.remarks}"</p>
+                <p className="text-[#86868b]">"{result.remarks}"</p>
               </div>
             )}
 
             {/* Signature Block */}
-            <div className="mt-8 pt-8 border-t border-slate-300 grid grid-cols-3 gap-4 text-center text-xs">
+            <div className="mt-8 pt-6 border-t border-[#e5e5ea] grid grid-cols-3 gap-4 text-center text-xs">
               <div>
                 <div className="h-10"></div>
-                <p className="font-bold text-slate-800 border-t border-slate-400 pt-1">Class Teacher</p>
+                <p className="font-semibold text-[#1d1d1f] border-t border-[#e5e5ea] pt-2">Class Teacher</p>
               </div>
 
               <div>
                 <div className="h-10 flex items-center justify-center">
-                  <div className="h-9 w-9 rounded-full border border-dashed border-slate-400 flex items-center justify-center text-[9px] text-slate-400">
-                    SEAL
+                  <div className="h-8 w-8 rounded-full border border-dashed border-[#86868b] flex items-center justify-center text-[9px] text-[#86868b] font-medium">
+                    Seal
                   </div>
                 </div>
-                <p className="font-bold text-slate-800 border-t border-slate-400 pt-1">Exam Controller</p>
+                <p className="font-semibold text-[#1d1d1f] border-t border-[#e5e5ea] pt-2">Examination Controller</p>
               </div>
 
               <div>
                 <div className="h-10"></div>
-                <p className="font-bold text-slate-800 border-t border-slate-400 pt-1">
+                <p className="font-semibold text-[#1d1d1f] border-t border-[#e5e5ea] pt-2">
                   Principal ({db.schoolInfo.principalName || 'Dr. R.K. Mishra'})
                 </p>
               </div>

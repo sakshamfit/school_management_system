@@ -3,15 +3,7 @@ import {
   CreditCard,
   Phone,
   Search,
-  CheckCircle2,
-  AlertCircle,
-  Clock,
-  Filter,
-  DollarSign,
   Receipt,
-  Download,
-  Share2,
-  Printer,
 } from 'lucide-react';
 import { useSchool } from '../../context/SchoolContext';
 import { Student } from '../../types';
@@ -55,98 +47,99 @@ export const FeesView: React.FC<FeesViewProps> = ({
   }, [db.feeAccounts, selectedClassId, statusFilter, searchQuery]);
 
   return (
-    <div className="space-y-4 pb-16">
+    <div className="space-y-6 pb-16 text-[#1d1d1f]">
       {/* Header Bar */}
-      <div className="rounded-3xl border border-orange-100 bg-white p-4 sm:p-5 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+      <div className="bg-white rounded-[18px] border border-[#e5e5ea] p-6 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#ff9500]/10 text-[#ff9500]">
               <CreditCard className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-lg font-black text-slate-900">
-                School Fees & WhatsApp Hub
+              <h2 className="text-xl font-semibold tracking-[-0.022em] text-[#1d1d1f]">
+                Fee Management & Receipts
               </h2>
-              <p className="text-xs text-slate-500">
-                Live fee ledgers, instant 1-tap WhatsApp parent reminders & receipts
+              <p className="text-xs text-[#86868b]">
+                Tuition ledgers, WhatsApp payment reminders, and receipts
               </p>
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
+          {/* Segmented Switcher */}
+          <div className="flex items-center bg-[#f5f5f7] p-1 rounded-full border border-[#e5e5ea]">
             <button
               onClick={() => setActiveTab('accounts')}
-              className={`rounded-xl px-3.5 py-2 text-xs font-bold transition-all ${
+              className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-all ${
                 activeTab === 'accounts'
-                  ? 'bg-emerald-600 text-white shadow-sm'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  ? 'bg-white text-[#1d1d1f] shadow-xs'
+                  : 'text-[#86868b] hover:text-[#1d1d1f]'
               }`}
             >
               Fee Accounts
             </button>
             <button
               onClick={() => setActiveTab('transactions')}
-              className={`rounded-xl px-3.5 py-2 text-xs font-bold transition-all ${
+              className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-all ${
                 activeTab === 'transactions'
-                  ? 'bg-emerald-600 text-white shadow-sm'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  ? 'bg-white text-[#1d1d1f] shadow-xs'
+                  : 'text-[#86868b] hover:text-[#1d1d1f]'
               }`}
             >
-              Payment Receipts ({db.feeTransactions.length})
+              Receipts ({db.feeTransactions.length})
             </button>
           </div>
         </div>
       </div>
 
       {/* Financial Metrics Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Billed</span>
-          <p className="mt-1 text-xl sm:text-2xl font-black text-slate-900">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="bg-white rounded-[18px] border border-[#e5e5ea] p-5 shadow-xs">
+          <span className="text-xs font-semibold text-[#86868b]">Total Billed</span>
+          <p className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight text-[#1d1d1f]">
             ₹{(totalBilled / 1000).toFixed(0)}k
           </p>
-          <span className="text-[10px] text-slate-500">All student accounts</span>
+          <span className="text-[11px] text-[#86868b]">All enrolled students</span>
         </div>
 
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4 shadow-xs">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700">Collected Fee</span>
-          <p className="mt-1 text-xl sm:text-2xl font-black text-emerald-700">
+        <div className="bg-white rounded-[18px] border border-[#e5e5ea] p-5 shadow-xs">
+          <span className="text-xs font-semibold text-[#30d158]">Collected</span>
+          <p className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight text-[#30d158]">
             ₹{(totalCollected / 1000).toFixed(0)}k
           </p>
-          <span className="text-[10px] text-emerald-600 font-semibold">
-            {totalBilled > 0 ? `${((totalCollected / totalBilled) * 100).toFixed(1)}% collected` : '0%'}
+          <span className="text-[11px] text-[#30d158] font-medium">
+            {totalBilled > 0 ? `${((totalCollected / totalBilled) * 100).toFixed(1)}% Collected` : '0%'}
           </span>
         </div>
 
-        <div className="rounded-2xl border border-rose-200 bg-rose-50/50 p-4 shadow-xs">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-rose-700">Pending Dues</span>
-          <p className="mt-1 text-xl sm:text-2xl font-black text-rose-700">
+        <div className="bg-white rounded-[18px] border border-[#e5e5ea] p-5 shadow-xs">
+          <span className="text-xs font-semibold text-[#ff3b30]">Pending Dues</span>
+          <p className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight text-[#ff3b30]">
             ₹{(totalPending / 1000).toFixed(0)}k
           </p>
-          <span className="text-[10px] text-rose-600 font-bold">{dueStudentsCount} Students with Dues</span>
+          <span className="text-[11px] text-[#ff3b30] font-medium">{dueStudentsCount} Students with dues</span>
         </div>
 
-        <div className="rounded-2xl border border-blue-200 bg-blue-50/50 p-4 shadow-xs">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700">Collection Rate</span>
-          <p className="mt-1 text-xl sm:text-2xl font-black text-blue-800">
+        <div className="bg-white rounded-[18px] border border-[#e5e5ea] p-5 shadow-xs">
+          <span className="text-xs font-semibold text-[#0066cc]">Collection Rate</span>
+          <p className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight text-[#0066cc]">
             {totalBilled > 0 ? ((totalCollected / totalBilled) * 100).toFixed(0) : 0}%
           </p>
-          <span className="text-[10px] text-blue-600">Session {db.schoolInfo.currentAcademicYear}</span>
+          <span className="text-[11px] text-[#86868b]">Session {db.schoolInfo.currentAcademicYear}</span>
         </div>
       </div>
 
       {activeTab === 'accounts' ? (
         <>
           {/* Filters */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-xs grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <div className="bg-white rounded-[18px] border border-[#e5e5ea] p-4 grid grid-cols-1 sm:grid-cols-3 gap-3 shadow-xs">
             <div className="relative">
-              <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
+              <Search className="absolute left-3.5 top-3 h-4 w-4 text-[#86868b]" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Search student or roll..."
-                className="w-full rounded-xl border border-slate-200 py-1.5 pl-9 pr-3 text-xs font-medium text-slate-800 placeholder-slate-400 focus:border-emerald-500 focus:outline-none"
+                placeholder="Search student or roll number..."
+                className="apple-input pl-10"
               />
             </div>
 
@@ -154,12 +147,12 @@ export const FeesView: React.FC<FeesViewProps> = ({
               <select
                 value={selectedClassId}
                 onChange={e => setSelectedClassId(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white py-1.5 px-3 text-xs font-bold text-slate-800 focus:border-emerald-500 focus:outline-none"
+                className="apple-input font-medium"
               >
                 <option value="all">All Classes</option>
                 {db.classes.map(c => (
                   <option key={c.id} value={c.id}>
-                    {c.name} - Sec {c.section}
+                    {c.name} (Section {c.section})
                   </option>
                 ))}
               </select>
@@ -169,20 +162,20 @@ export const FeesView: React.FC<FeesViewProps> = ({
               <select
                 value={statusFilter}
                 onChange={e => setStatusFilter(e.target.value as any)}
-                className="w-full rounded-xl border border-slate-200 bg-white py-1.5 px-3 text-xs font-bold text-slate-800 focus:border-emerald-500 focus:outline-none"
+                className="apple-input font-medium"
               >
                 <option value="all">All Statuses ({db.feeAccounts.length})</option>
                 <option value="due">Due Only</option>
-                <option value="partial">Partial Paid</option>
+                <option value="partial">Partially Paid</option>
                 <option value="paid">Fully Paid</option>
               </select>
             </div>
           </div>
 
           {/* Accounts List */}
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             {filteredAccounts.length === 0 ? (
-              <div className="rounded-3xl border border-dashed border-slate-200 bg-white p-10 text-center text-xs text-slate-400">
+              <div className="bg-white rounded-[18px] border border-[#e5e5ea] p-10 text-center text-xs text-[#86868b] shadow-xs">
                 No fee accounts match the selected filter.
               </div>
             ) : (
@@ -193,11 +186,11 @@ export const FeesView: React.FC<FeesViewProps> = ({
                 return (
                   <div
                     key={fa.id}
-                    className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs hover:border-emerald-300 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                    className="bg-white rounded-[18px] border border-[#e5e5ea] p-4 hover:border-[#0066cc]/40 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs group"
                   >
                     <div
                       onClick={() => onSelectStudent(fa.studentId)}
-                      className="flex items-center space-x-3 cursor-pointer group flex-1 min-w-0"
+                      className="flex items-center space-x-3.5 cursor-pointer flex-1 min-w-0"
                     >
                       <img
                         src={
@@ -205,37 +198,37 @@ export const FeesView: React.FC<FeesViewProps> = ({
                           `https://api.dicebear.com/7.x/adventurer/svg?seed=${fa.studentName}`
                         }
                         alt={fa.studentName}
-                        className="h-11 w-11 shrink-0 rounded-2xl object-cover border border-slate-200"
+                        className="h-12 w-12 shrink-0 rounded-full object-cover bg-white apple-product-shadow"
                       />
                       <div className="min-w-0">
                         <div className="flex items-center space-x-2">
-                          <h4 className="font-extrabold text-xs sm:text-sm text-slate-900 group-hover:text-emerald-700 truncate">
+                          <h4 className="font-semibold text-sm text-[#1d1d1f] group-hover:text-[#0066cc] truncate transition-colors">
                             {fa.studentName}
                           </h4>
-                          <span className="rounded bg-slate-100 px-1.5 py-0.2 text-[10px] font-bold text-slate-700">
+                          <span className="bg-[#f5f5f7] px-2 py-0.5 rounded-full text-[10px] font-semibold text-[#0066cc]">
                             #{fa.rollNumber}
                           </span>
                         </div>
-                        <p className="text-[11px] text-slate-500 truncate">
-                          {fa.className} • Parent: {student?.parentName || 'N/A'}
+                        <p className="text-xs text-[#86868b] truncate mt-0.5">
+                          {fa.className} • Guardian: {student?.parentName || 'N/A'}
                         </p>
                       </div>
                     </div>
 
                     {/* Financial Amounts Breakdown */}
-                    <div className="flex items-center justify-between sm:justify-end space-x-4 shrink-0 text-xs">
+                    <div className="flex items-center justify-between sm:justify-end space-x-5 shrink-0 text-xs">
                       <div className="text-right">
-                        <span className="text-[10px] text-slate-400 block">Total / Paid</span>
-                        <span className="font-bold text-slate-700">
+                        <span className="text-[11px] text-[#86868b] block">Total / Paid</span>
+                        <span className="font-semibold text-[#1d1d1f]">
                           ₹{fa.paidAmount} / ₹{fa.totalFee}
                         </span>
                       </div>
 
                       <div className="text-right">
-                        <span className="text-[10px] text-slate-400 block">Due Amount</span>
+                        <span className="text-[11px] text-[#86868b] block">Due Amount</span>
                         <span
-                          className={`font-black text-sm ${
-                            isDue ? 'text-rose-600' : 'text-emerald-600'
+                          className={`font-semibold text-sm ${
+                            isDue ? 'text-[#ff3b30]' : 'text-[#30d158]'
                           }`}
                         >
                           ₹{fa.dueAmount}
@@ -243,24 +236,23 @@ export const FeesView: React.FC<FeesViewProps> = ({
                       </div>
 
                       {/* Actions */}
-                      <div className="flex items-center space-x-1.5 pl-2 border-l border-slate-100">
+                      <div className="flex items-center space-x-2 pl-3 border-l border-[#e5e5ea]">
                         {student && student.parentPhone && (
                           <button
                             onClick={() => openWhatsAppFeeMessage(db.schoolInfo, student, fa)}
-                            className="inline-flex items-center space-x-1 rounded-xl bg-emerald-500 hover:bg-emerald-600 px-2.5 py-1.5 text-xs font-bold text-white shadow-xs active:scale-95 transition-all"
+                            className="w-8 h-8 rounded-full bg-[#f5f5f7] text-[#30d158] hover:bg-[#30d158] hover:text-white flex items-center justify-center transition-colors"
                             title="Send WhatsApp Notice"
                           >
-                            <Phone className="h-3.5 w-3.5" />
-                            <span className="hidden sm:inline">WhatsApp</span>
+                            <Phone className="h-4 w-4" />
                           </button>
                         )}
 
                         {student && (
                           <button
                             onClick={() => onOpenCollectFee(student)}
-                            className="inline-flex items-center space-x-1 rounded-xl bg-orange-600 hover:bg-orange-700 px-3 py-1.5 text-xs font-bold text-white shadow-xs active:scale-95 transition-all"
+                            className="apple-btn-primary py-1.5 px-3 text-xs"
                           >
-                            <CreditCard className="h-3.5 w-3.5" />
+                            <CreditCard className="h-3.5 w-3.5 mr-1.5" />
                             <span>Collect</span>
                           </button>
                         )}
@@ -274,47 +266,47 @@ export const FeesView: React.FC<FeesViewProps> = ({
         </>
       ) : (
         /* Transactions & Receipts Ledger */
-        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div className="bg-white rounded-[18px] border border-[#e5e5ea] p-6 space-y-4 shadow-xs">
+          <div className="flex items-center justify-between pb-3 border-b border-[#f0f0f0]">
             <div className="flex items-center space-x-2">
-              <Receipt className="h-5 w-5 text-emerald-600" />
-              <h3 className="font-extrabold text-slate-900 text-sm">
-                Official Fee Receipts & Transactions
+              <Receipt className="h-4 w-4 text-[#0066cc]" />
+              <h3 className="font-semibold text-[#1d1d1f] text-sm">
+                Official Fee Receipts & Payment History
               </h3>
             </div>
           </div>
 
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-[#f0f0f0]">
             {db.feeTransactions.length === 0 ? (
-              <p className="py-8 text-center text-xs text-slate-400">
+              <p className="py-8 text-center text-xs text-[#86868b]">
                 No payment transactions recorded yet.
               </p>
             ) : (
               db.feeTransactions.map(tx => (
                 <div
                   key={tx.id}
-                  className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs"
+                  className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
                 >
                   <div>
                     <div className="flex items-center space-x-2">
-                      <span className="font-mono font-bold text-slate-800 text-xs">
+                      <span className="font-semibold text-[#1d1d1f] text-xs">
                         {tx.receiptNumber}
                       </span>
-                      <span className="rounded-md bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
+                      <span className="bg-[#30d158]/10 text-[#30d158] px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase">
                         {tx.paymentMethod}
                       </span>
                     </div>
-                    <p className="font-bold text-slate-900 mt-0.5">
-                      {tx.studentName} • {tx.className} (Roll No: {tx.rollNumber})
+                    <p className="font-semibold text-[#1d1d1f] mt-1 text-sm">
+                      {tx.studentName} • {tx.className} (Roll #{tx.rollNumber})
                     </p>
-                    <p className="text-[11px] text-slate-500">
-                      Date: {formatDate(tx.paymentDate)} • Recorded by: {tx.collectedBy}
+                    <p className="text-[11px] text-[#86868b] mt-0.5">
+                      Date: {formatDate(tx.paymentDate)} • Collected by: {tx.collectedBy}
                     </p>
-                    {tx.notes && <p className="text-[10px] text-slate-400 mt-0.5">Ref: {tx.notes}</p>}
+                    {tx.notes && <p className="text-[11px] text-[#86868b] mt-0.5">Ref: {tx.notes}</p>}
                   </div>
 
                   <div className="flex items-center space-x-3">
-                    <span className="text-base font-black text-emerald-700">
+                    <span className="text-base font-semibold text-[#30d158]">
                       ₹{tx.amount.toLocaleString('en-IN')}
                     </span>
                   </div>

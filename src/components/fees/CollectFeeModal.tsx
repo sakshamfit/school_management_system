@@ -2,11 +2,7 @@ import React, { useState } from 'react';
 import {
   X,
   CreditCard,
-  CheckCircle2,
   Phone,
-  Receipt,
-  DollarSign,
-  Calendar,
   Save,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -72,7 +68,6 @@ export const CollectFeeModal: React.FC<CollectFeeModalProps> = ({
     } catch {}
 
     if (sendWhatsAppOnSuccess && student.parentPhone) {
-      // Updated fee account simulated for instant receipt
       const updatedAccount = {
         ...feeAccount,
         paidAmount: feeAccount.paidAmount + amount,
@@ -85,44 +80,46 @@ export const CollectFeeModal: React.FC<CollectFeeModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-3 sm:p-4 backdrop-blur-sm animate-in fade-in overflow-y-auto">
-      <div className="w-full max-w-md rounded-3xl bg-white shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-3 sm:p-4 backdrop-blur-sm animate-in fade-in overflow-y-auto">
+      <div className="w-full max-w-md bg-white rounded-[20px] border border-[#e5e5ea] shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col text-[#1d1d1f]">
         {/* Header */}
-        <div className="flex items-center justify-between bg-gradient-to-r from-emerald-600 to-teal-600 p-5 text-white shrink-0">
-          <div className="flex items-center space-x-2">
-            <CreditCard className="h-6 w-6" />
+        <div className="flex items-center justify-between bg-white p-5 border-b border-[#f0f0f0] shrink-0">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#0066cc]/10 text-[#0066cc]">
+              <CreditCard className="h-5 w-5" />
+            </div>
             <div>
-              <h3 className="text-base font-black">Collect Fee Payment</h3>
-              <p className="text-[11px] text-emerald-100">{student.name} • {student.className}</p>
+              <h3 className="text-base font-semibold tracking-[-0.022em] text-[#1d1d1f]">Collect Student Fee</h3>
+              <p className="text-xs text-[#86868b]">{student.name} • {student.className}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="rounded-full bg-white/20 p-1.5 text-white hover:bg-white/30"
+            className="w-8 h-8 rounded-full bg-[#f5f5f7] text-[#86868b] hover:text-[#1d1d1f] flex items-center justify-center transition-colors"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4 overflow-y-auto">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto">
           {/* Current Fee Overview */}
-          <div className="rounded-2xl bg-emerald-50/70 p-4 border border-emerald-100 space-y-2">
+          <div className="bg-[#f5f5f7] p-4 rounded-2xl border border-[#e5e5ea] space-y-2">
             <div className="flex justify-between text-xs">
-              <span className="text-slate-500">Total Billed Fee:</span>
-              <span className="font-bold text-slate-800">
+              <span className="text-[#86868b]">Total Billed Fee:</span>
+              <span className="font-semibold text-[#1d1d1f]">
                 ₹{(feeAccount.totalFee || 0).toLocaleString('en-IN')}
               </span>
             </div>
             <div className="flex justify-between text-xs">
-              <span className="text-slate-500">Already Paid:</span>
-              <span className="font-bold text-emerald-700">
+              <span className="text-[#86868b]">Already Paid:</span>
+              <span className="font-semibold text-[#30d158]">
                 ₹{(feeAccount.paidAmount || 0).toLocaleString('en-IN')}
               </span>
             </div>
-            <div className="flex justify-between text-xs pt-1 border-t border-emerald-200/60 font-black">
-              <span className="text-slate-800">Outstanding Due:</span>
-              <span className="text-rose-600 text-sm">
+            <div className="flex justify-between text-xs pt-2 border-t border-[#e5e5ea] font-medium">
+              <span className="text-[#1d1d1f]">Outstanding Due:</span>
+              <span className="text-[#ff3b30] font-semibold text-sm">
                 ₹{(feeAccount.dueAmount || 0).toLocaleString('en-IN')}
               </span>
             </div>
@@ -130,7 +127,7 @@ export const CollectFeeModal: React.FC<CollectFeeModalProps> = ({
 
           {/* Amount to Pay with fast presets */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-semibold text-[#86868b] mb-1">
               Payment Amount (₹) *
             </label>
             <input
@@ -141,7 +138,7 @@ export const CollectFeeModal: React.FC<CollectFeeModalProps> = ({
               value={amount}
               onChange={e => setAmount(Number(e.target.value))}
               placeholder="5000"
-              className="w-full rounded-xl border border-slate-200 py-2.5 px-3 text-base font-black text-slate-900 focus:border-emerald-500 focus:outline-none"
+              className="apple-input text-base font-semibold"
             />
 
             {feeAccount.dueAmount > 0 && (
@@ -149,14 +146,14 @@ export const CollectFeeModal: React.FC<CollectFeeModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setAmount(feeAccount.dueAmount)}
-                  className="rounded-lg bg-emerald-100 px-2.5 py-1 text-[10px] font-bold text-emerald-800 hover:bg-emerald-200"
+                  className="apple-btn-secondary py-1 px-2.5 text-xs text-[#30d158]"
                 >
                   Pay Full Due (₹{feeAccount.dueAmount})
                 </button>
                 <button
                   type="button"
                   onClick={() => setAmount(Math.round(feeAccount.dueAmount / 2))}
-                  className="rounded-lg bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-700 hover:bg-slate-200"
+                  className="apple-btn-secondary py-1 px-2.5 text-xs"
                 >
                   Pay Half (₹{Math.round(feeAccount.dueAmount / 2)})
                 </button>
@@ -166,7 +163,7 @@ export const CollectFeeModal: React.FC<CollectFeeModalProps> = ({
 
           {/* Payment Method */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-semibold text-[#86868b] mb-1">
               Payment Method *
             </label>
             <div className="grid grid-cols-4 gap-2">
@@ -175,10 +172,10 @@ export const CollectFeeModal: React.FC<CollectFeeModalProps> = ({
                   key={mode}
                   type="button"
                   onClick={() => setPaymentMethod(mode)}
-                  className={`rounded-xl py-2 text-xs font-bold transition-all ${
+                  className={`py-2 rounded-xl text-xs font-semibold transition-all ${
                     paymentMethod === mode
-                      ? 'bg-emerald-600 text-white shadow-sm'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      ? 'bg-[#0066cc] text-white shadow-xs'
+                      : 'bg-[#f5f5f7] text-[#86868b] hover:text-[#1d1d1f]'
                   }`}
                 >
                   {mode}
@@ -189,55 +186,55 @@ export const CollectFeeModal: React.FC<CollectFeeModalProps> = ({
 
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-[#86868b] mb-1">
                 Receipt Number
               </label>
               <input
                 type="text"
                 disabled
                 value={receiptNumber}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 px-3 text-xs font-mono font-bold text-slate-600"
+                className="apple-input font-mono text-[#86868b] bg-[#f5f5f7]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-[#86868b] mb-1">
                 Payment Date
               </label>
               <input
                 type="date"
                 value={paymentDate}
                 onChange={e => setPaymentDate(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 py-2 px-3 text-xs font-bold text-slate-800 focus:border-emerald-500 focus:outline-none"
+                className="apple-input font-medium"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-semibold text-[#86868b] mb-1">
               Remarks / Transaction ID
             </label>
             <input
               type="text"
               value={notes}
               onChange={e => setNotes(e.target.value)}
-              placeholder="e.g. GooglePay Ref: 394829381"
-              className="w-full rounded-xl border border-slate-200 py-2 px-3 text-xs font-medium text-slate-800 focus:border-emerald-500 focus:outline-none"
+              placeholder="e.g. UPI Ref: 394829381"
+              className="apple-input"
             />
           </div>
 
           {/* WhatsApp toggle */}
           {student.parentPhone && (
-            <label className="flex items-center space-x-2 rounded-xl bg-emerald-50 p-3 text-xs font-bold text-emerald-900 cursor-pointer border border-emerald-200">
+            <label className="flex items-center space-x-2.5 bg-[#f5f5f7] p-3 rounded-xl cursor-pointer">
               <input
                 type="checkbox"
                 checked={sendWhatsAppOnSuccess}
                 onChange={e => setSendWhatsAppOnSuccess(e.target.checked)}
-                className="h-4 w-4 rounded text-emerald-600 focus:ring-emerald-500"
+                className="h-4 w-4 rounded text-[#30d158] focus:ring-0"
               />
-              <div className="flex items-center space-x-1.5">
-                <Phone className="h-3.5 w-3.5 text-emerald-600" />
-                <span>Open WhatsApp receipt to parent on submit</span>
+              <div className="flex items-center space-x-1.5 text-xs font-medium text-[#1d1d1f]">
+                <Phone className="h-3.5 w-3.5 text-[#30d158]" />
+                <span>Send WhatsApp Receipt to Parent</span>
               </div>
             </label>
           )}
@@ -245,10 +242,10 @@ export const CollectFeeModal: React.FC<CollectFeeModalProps> = ({
           <div className="pt-2">
             <button
               type="submit"
-              className="w-full rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 py-3 text-xs font-black text-white shadow-lg shadow-emerald-600/25 hover:from-emerald-700 hover:to-teal-700 active:scale-95 transition-all flex items-center justify-center space-x-2"
+              className="w-full apple-btn-primary py-3"
             >
-              <Save className="h-4 w-4" />
-              <span>CONFIRM & RECORD PAYMENT (₹{amount})</span>
+              <Save className="h-4 w-4 mr-2" />
+              <span>Record Transaction (₹{amount})</span>
             </button>
           </div>
         </form>

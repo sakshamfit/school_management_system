@@ -5,15 +5,19 @@ import {
   Mail,
   Phone,
   MapPin,
-  FileText,
   Save,
   CheckCircle2,
-  Lock,
+  Database,
+  Wifi,
 } from 'lucide-react';
 import { useSchool } from '../../context/SchoolContext';
 
 export const SchoolSettingsView: React.FC = () => {
-  const { db, updateSchoolSettings, currentUser } = useSchool();
+  const {
+    db,
+    updateSchoolSettings,
+    lastCloudSyncTime,
+  } = useSchool();
 
   const [name, setName] = useState(db.schoolInfo.name);
   const [tagline, setTagline] = useState(db.schoolInfo.tagline || 'Knowledge is Power • Empowering Young Minds');
@@ -44,164 +48,220 @@ export const SchoolSettingsView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-5 pb-16">
+    <div className="space-y-6 pb-16 text-[#1d1d1f]">
       {/* Header */}
-      <div className="rounded-3xl border border-orange-100 bg-white p-4 sm:p-5 shadow-sm">
-        <div className="flex items-center space-x-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+      <div className="bg-white rounded-[18px] border border-[#e5e5ea] p-6 shadow-xs">
+        <div className="flex items-center space-x-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#0066cc]/10 text-[#0066cc]">
             <Settings className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="text-lg font-black text-slate-900">
-              School Configuration & Settings
+            <h2 className="text-xl font-semibold tracking-[-0.022em] text-[#1d1d1f]">
+              School Profile & General Settings
             </h2>
-            <p className="text-xs text-slate-500">
-              Update institutional details, official WhatsApp contact numbers, and academic presets
+            <p className="text-xs text-[#86868b]">
+              Institutional metadata, official headers, and academic session settings
             </p>
           </div>
         </div>
       </div>
 
+      {/* Cloud Sync Status Card */}
+      <div className="bg-white rounded-[18px] border border-[#e5e5ea] p-6 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#f0f0f0]">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#30d158]/10 text-[#30d158]">
+              <Database className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="flex items-center space-x-2">
+                <h3 className="font-semibold text-sm text-[#1d1d1f]">
+                  Firestore Real-Time Cloud Sync
+                </h3>
+                <span className="inline-flex items-center gap-1.5 bg-[#30d158]/10 text-[#30d158] px-2.5 py-0.5 rounded-full text-[10px] font-semibold">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#30d158] animate-pulse"></span>
+                  Active & Synced
+                </span>
+              </div>
+              <p className="text-xs text-[#86868b] mt-0.5">
+                Bidirectional offline-first sync enabled across all devices
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+          <div className="bg-[#f5f5f7] p-3.5 rounded-xl border border-[#e5e5ea]">
+            <span className="text-[11px] text-[#86868b] block">Protocol</span>
+            <span className="font-semibold text-[#30d158] flex items-center gap-1 mt-1 text-xs">
+              <Wifi className="h-3.5 w-3.5" />
+              WebSocket Live
+            </span>
+          </div>
+
+          <div className="bg-[#f5f5f7] p-3.5 rounded-xl border border-[#e5e5ea]">
+            <span className="text-[11px] text-[#86868b] block">Active Students</span>
+            <span className="font-semibold text-[#1d1d1f] mt-1 block text-xs">
+              {db.students.filter(s => s.status === 'active').length} Records
+            </span>
+          </div>
+
+          <div className="bg-[#f5f5f7] p-3.5 rounded-xl border border-[#e5e5ea]">
+            <span className="text-[11px] text-[#86868b] block">Staff Accounts</span>
+            <span className="font-semibold text-[#1d1d1f] mt-1 block text-xs">
+              {db.users.length} Users
+            </span>
+          </div>
+
+          <div className="bg-[#f5f5f7] p-3.5 rounded-xl border border-[#e5e5ea]">
+            <span className="text-[11px] text-[#86868b] block">Last Sync</span>
+            <span className="font-semibold text-[#86868b] mt-1 block text-xs">
+              {lastCloudSyncTime || 'Live Continuous'}
+            </span>
+          </div>
+        </div>
+      </div>
+
       {savedSuccess && (
-        <div className="rounded-2xl bg-emerald-600 p-4 text-xs font-bold text-white shadow-md flex items-center space-x-2 animate-in fade-in">
-          <CheckCircle2 className="h-5 w-5 shrink-0" />
-          <span>School configurations updated and synced successfully!</span>
+        <div className="bg-[#30d158]/10 border border-[#30d158]/30 rounded-xl p-4 text-xs font-semibold text-[#30d158] flex items-center space-x-2 animate-in fade-in">
+          <CheckCircle2 className="h-4 w-4 shrink-0" />
+          <span>School settings updated and saved successfully.</span>
         </div>
       )}
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="rounded-3xl border border-slate-200 bg-white p-5 sm:p-6 shadow-xs space-y-4">
+      <form onSubmit={handleSubmit} className="bg-white rounded-[18px] border border-[#e5e5ea] p-6 space-y-4 shadow-xs">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              School Official Name *
+            <label className="block text-xs font-semibold text-[#86868b] mb-1">
+              School Name *
             </label>
             <div className="relative">
-              <School className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
+              <School className="absolute left-3.5 top-3 h-4 w-4 text-[#86868b]" />
               <input
                 type="text"
                 required
                 value={name}
                 onChange={e => setName(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 py-2 pl-10 pr-3 text-xs font-bold text-slate-900 focus:border-orange-500 focus:outline-none"
+                className="apple-input pl-10"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-semibold text-[#86868b] mb-1">
               School Motto / Tagline
             </label>
             <input
               type="text"
               value={tagline}
               onChange={e => setTagline(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 py-2 px-3 text-xs font-medium text-slate-800 focus:border-orange-500 focus:outline-none"
+              className="apple-input"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Principal / Director Name *
+            <label className="block text-xs font-semibold text-[#86868b] mb-1">
+              Principal / Headmaster Name *
             </label>
             <input
               type="text"
               required
               value={principalName}
               onChange={e => setPrincipalName(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 py-2 px-3 text-xs font-bold text-slate-900 focus:border-orange-500 focus:outline-none"
+              className="apple-input"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              CBSE / State Affiliation Number
+            <label className="block text-xs font-semibold text-[#86868b] mb-1">
+              Affiliation / Registration No
             </label>
             <input
               type="text"
               value={affiliationNo}
               onChange={e => setAffiliationNo(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 py-2 px-3 text-xs font-mono font-bold text-slate-800 focus:border-orange-500 focus:outline-none"
+              className="apple-input"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Official Helpline / WhatsApp Phone
+            <label className="block text-xs font-semibold text-[#86868b] mb-1">
+              Official Helpline / WhatsApp Number
             </label>
             <div className="relative">
-              <Phone className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
+              <Phone className="absolute left-3.5 top-3 h-4 w-4 text-[#86868b]" />
               <input
                 type="text"
                 value={phone}
                 onChange={e => setPhone(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 py-2 pl-10 pr-3 text-xs font-bold text-slate-900 focus:border-orange-500 focus:outline-none"
+                className="apple-input pl-10"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Official School Email
+            <label className="block text-xs font-semibold text-[#86868b] mb-1">
+              Official Email Address
             </label>
             <div className="relative">
-              <Mail className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
+              <Mail className="absolute left-3.5 top-3 h-4 w-4 text-[#86868b]" />
               <input
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 py-2 pl-10 pr-3 text-xs font-medium text-slate-800 focus:border-orange-500 focus:outline-none"
+                className="apple-input pl-10"
               />
             </div>
           </div>
 
           <div className="sm:col-span-2">
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              School Campus Address
+            <label className="block text-xs font-semibold text-[#86868b] mb-1">
+              School Address
             </label>
             <div className="relative">
-              <MapPin className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
+              <MapPin className="absolute left-3.5 top-3 h-4 w-4 text-[#86868b]" />
               <input
                 type="text"
                 value={address}
                 onChange={e => setAddress(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 py-2 pl-10 pr-3 text-xs font-medium text-slate-800 focus:border-orange-500 focus:outline-none"
+                className="apple-input pl-10"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Active Academic Session
+            <label className="block text-xs font-semibold text-[#86868b] mb-1">
+              Current Academic Session
             </label>
             <input
               type="text"
               value={currentAcademicYear}
               onChange={e => setCurrentAcademicYear(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 py-2 px-3 text-xs font-mono font-bold text-slate-800 focus:border-orange-500 focus:outline-none"
+              className="apple-input"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-semibold text-[#86868b] mb-1">
               Currency Symbol
             </label>
             <input
               type="text"
               value={currencySymbol}
               onChange={e => setCurrencySymbol(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 py-2 px-3 text-xs font-bold text-slate-800 focus:border-orange-500 focus:outline-none"
+              className="apple-input"
             />
           </div>
         </div>
 
-        <div className="pt-4 border-t border-slate-100 flex justify-end">
+        <div className="pt-4 border-t border-[#f0f0f0] flex justify-end">
           <button
             type="submit"
-            className="rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 px-6 py-2.5 text-xs font-black text-white shadow-md hover:from-orange-600 hover:to-amber-700 active:scale-95 transition-all flex items-center space-x-2"
+            className="apple-btn-primary"
           >
-            <Save className="h-4 w-4" />
-            <span>Save School Settings</span>
+            <Save className="h-4 w-4 mr-2" />
+            <span>Save Settings</span>
           </button>
         </div>
       </form>

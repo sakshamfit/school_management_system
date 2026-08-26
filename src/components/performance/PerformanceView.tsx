@@ -2,11 +2,6 @@ import React, { useState, useMemo } from 'react';
 import {
   Sparkles,
   Search,
-  Filter,
-  Star,
-  PlusCircle,
-  ChevronRight,
-  TrendingUp,
 } from 'lucide-react';
 import { useSchool } from '../../context/SchoolContext';
 import { Student } from '../../types';
@@ -19,7 +14,6 @@ interface PerformanceViewProps {
 
 export const PerformanceView: React.FC<PerformanceViewProps> = ({
   onSelectStudent,
-  onOpenAddPerformance,
 }) => {
   const { db } = useSchool();
   const [selectedClassId, setSelectedClassId] = useState<string>('all');
@@ -41,35 +35,35 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({
   }, [db.performance, selectedClassId, selectedCategory, searchQuery]);
 
   return (
-    <div className="space-y-4 pb-16">
+    <div className="space-y-6 pb-16 text-[#1d1d1f]">
       {/* Header */}
-      <div className="rounded-3xl border border-orange-100 bg-white p-4 sm:p-5 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-pink-100 text-pink-600">
+      <div className="bg-white rounded-[18px] border border-[#e5e5ea] p-6 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#ff9500]/10 text-[#ff9500]">
               <Sparkles className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-lg font-black text-slate-900">
-                Student Remarks & Growth Track
+              <h2 className="text-xl font-semibold tracking-[-0.022em] text-[#1d1d1f]">
+                Student Performance & Teacher Notes
               </h2>
-              <p className="text-xs text-slate-500">
-                Teacher observations, behavioral feedback, and continuous progress notes
+              <p className="text-xs text-[#86868b]">
+                Behavior observations, strengths, conduct logs, and continuous evaluation
               </p>
             </div>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-3 border-t border-slate-100">
+        <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-[#f0f0f0]">
           <div className="relative">
-            <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
+            <Search className="absolute left-3.5 top-3 h-4 w-4 text-[#86868b]" />
             <input
               type="text"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Search by student or remarks..."
-              className="w-full rounded-xl border border-slate-200 py-1.5 pl-9 pr-3 text-xs font-medium text-slate-800 placeholder-slate-400 focus:border-pink-500 focus:outline-none"
+              placeholder="Search student or remarks..."
+              className="apple-input pl-10"
             />
           </div>
 
@@ -77,12 +71,12 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({
             <select
               value={selectedClassId}
               onChange={e => setSelectedClassId(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white py-1.5 px-3 text-xs font-bold text-slate-800 focus:border-pink-500 focus:outline-none"
+              className="apple-input font-medium"
             >
               <option value="all">All Classes</option>
               {db.classes.map(c => (
                 <option key={c.id} value={c.id}>
-                  {c.name} - Sec {c.section}
+                  {c.name} - Section {c.section}
                 </option>
               ))}
             </select>
@@ -92,25 +86,25 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({
             <select
               value={selectedCategory}
               onChange={e => setSelectedCategory(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white py-1.5 px-3 text-xs font-bold text-slate-800 focus:border-pink-500 focus:outline-none"
+              className="apple-input font-medium"
             >
               <option value="all">All Categories</option>
               <option value="academic">Academic Excellence</option>
-              <option value="behavior">Behavior & Discipline</option>
+              <option value="behavior">Conduct & Discipline</option>
               <option value="attendance">Attendance & Punctuality</option>
-              <option value="sports">Sports</option>
-              <option value="creativity">Creativity & Arts</option>
-              <option value="leadership">Leadership</option>
+              <option value="sports">Athletics & Sports</option>
+              <option value="creativity">Arts & Innovation</option>
+              <option value="leadership">Leadership & Initiative</option>
             </select>
           </div>
         </div>
       </div>
 
       {/* Remarks Feed */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         {filteredLogs.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-slate-200 bg-white p-10 text-center text-xs text-slate-400">
-            No student remarks found matching criteria.
+          <div className="bg-white rounded-[18px] border border-[#e5e5ea] p-10 text-center text-xs text-[#86868b] shadow-xs">
+            No evaluations located matching criteria.
           </div>
         ) : (
           filteredLogs.map(log => {
@@ -119,12 +113,12 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({
             return (
               <div
                 key={log.id}
-                className="rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-xs hover:border-pink-300 transition-all space-y-3"
+                className="bg-white rounded-[18px] border border-[#e5e5ea] p-5 hover:border-[#0066cc]/40 transition-all shadow-xs space-y-3 group"
               >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#f0f0f0] pb-3">
                   <div
                     onClick={() => onSelectStudent(log.studentId)}
-                    className="flex items-center space-x-3 cursor-pointer group"
+                    className="flex items-center space-x-3.5 cursor-pointer"
                   >
                     <img
                       src={
@@ -132,31 +126,31 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({
                         `https://api.dicebear.com/7.x/adventurer/svg?seed=${log.studentName}`
                       }
                       alt={log.studentName}
-                      className="h-10 w-10 rounded-full object-cover border border-pink-200"
+                      className="h-11 w-11 rounded-full object-cover bg-white apple-product-shadow"
                     />
                     <div>
-                      <h4 className="font-extrabold text-sm text-slate-900 group-hover:text-pink-600">
+                      <h4 className="font-semibold text-sm text-[#1d1d1f] group-hover:text-[#0066cc] transition-colors">
                         {log.studentName}
                       </h4>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-[#86868b]">
                         {log.className} • {formatDate(log.date)}
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center space-x-2">
-                    <span className="rounded-full bg-pink-100 px-2.5 py-0.5 text-xs font-black uppercase text-pink-800">
+                    <span className="bg-[#f5f5f7] px-2.5 py-0.5 rounded-full text-xs font-semibold text-[#0066cc] capitalize">
                       {log.category}
                     </span>
                     <span
-                      className={`rounded-full px-2.5 py-0.5 text-xs font-bold capitalize ${
+                      className={`px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${
                         log.rating === 'outstanding'
-                          ? 'bg-emerald-100 text-emerald-800'
+                          ? 'bg-[#30d158]/10 text-[#30d158]'
                           : log.rating === 'good'
-                          ? 'bg-blue-100 text-blue-800'
+                          ? 'bg-[#0066cc]/10 text-[#0066cc]'
                           : log.rating === 'satisfactory'
-                          ? 'bg-amber-100 text-amber-800'
-                          : 'bg-rose-100 text-rose-800'
+                          ? 'bg-[#ff9500]/10 text-[#ff9500]'
+                          : 'bg-[#ff3b30]/10 text-[#ff3b30]'
                       }`}
                     >
                       {log.rating.replace('_', ' ')}
@@ -164,30 +158,30 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({
                   </div>
                 </div>
 
-                <p className="text-xs sm:text-sm font-medium text-slate-800 leading-relaxed">
+                <p className="text-xs font-medium text-[#1d1d1f] leading-relaxed">
                   "{log.remarks}"
                 </p>
 
                 {(log.strengths || log.areasToImprove) && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 text-xs">
                     {log.strengths && (
-                      <div className="rounded-xl bg-emerald-50/70 p-2 border border-emerald-100 text-emerald-900">
-                        <strong>🌟 Strengths:</strong> {log.strengths}
+                      <div className="bg-[#30d158]/10 rounded-xl p-3 text-[#1d1d1f]">
+                        <strong className="text-[#30d158] block mb-0.5">Strengths:</strong> {log.strengths}
                       </div>
                     )}
                     {log.areasToImprove && (
-                      <div className="rounded-xl bg-amber-50/70 p-2 border border-amber-100 text-amber-900">
-                        <strong>🎯 Areas to Focus:</strong> {log.areasToImprove}
+                      <div className="bg-[#ff9500]/10 rounded-xl p-3 text-[#1d1d1f]">
+                        <strong className="text-[#ff9500] block mb-0.5">Areas to Focus:</strong> {log.areasToImprove}
                       </div>
                     )}
                   </div>
                 )}
 
-                <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-50">
-                  <span>Logged by: {log.teacherName}</span>
+                <div className="flex items-center justify-between text-xs text-[#86868b] pt-2 border-t border-[#f0f0f0]">
+                  <span>Evaluated by: {log.teacherName}</span>
                   <button
                     onClick={() => onSelectStudent(log.studentId)}
-                    className="text-pink-600 font-bold hover:underline"
+                    className="text-[#0066cc] font-semibold hover:underline"
                   >
                     View Student Record →
                   </button>

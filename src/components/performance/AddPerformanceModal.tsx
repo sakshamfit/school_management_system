@@ -52,64 +52,69 @@ export const AddPerformanceModal: React.FC<AddPerformanceModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-3 sm:p-4 backdrop-blur-sm animate-in fade-in overflow-y-auto">
-      <div className="w-full max-w-md rounded-3xl bg-white shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-3 sm:p-4 backdrop-blur-md animate-in fade-in overflow-y-auto">
+      <div className="w-full max-w-md bg-[#1a1a1a] border border-[#3c3c3c] shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col font-mono text-[#e6e6e6]">
+        {/* M-Stripe bar */}
+        <div className="m-stripe" />
+
         {/* Header */}
-        <div className="flex items-center justify-between bg-gradient-to-r from-purple-600 to-pink-600 p-5 text-white shrink-0">
-          <div className="flex items-center space-x-2">
-            <Sparkles className="h-6 w-6" />
+        <div className="flex items-center justify-between bg-black p-5 border-b border-[#3c3c3c] text-white shrink-0">
+          <div className="flex items-center space-x-2.5">
+            <div className="flex h-8 w-8 items-center justify-center bg-[#1a1a1a] border border-[#3c3c3c] text-[#1c69d4]">
+              <Sparkles className="h-4 w-4" />
+            </div>
             <div>
-              <h3 className="text-base font-black">Add Performance Remark</h3>
-              <p className="text-[11px] text-pink-100">{student.name} • {student.className}</p>
+              <h3 className="text-xs sm:text-sm font-bold uppercase tracking-[1.5px]">LOG PERFORMANCE OBSERVATION</h3>
+              <p className="text-[10px] text-[#7e7e7e] uppercase">{student.name} • {student.className}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="rounded-full bg-white/20 p-1.5 text-white hover:bg-white/30"
+            className="bg-[#1a1a1a] border border-[#3c3c3c] p-1.5 text-white hover:border-white transition-colors"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4 overflow-y-auto">
+        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4 overflow-y-auto font-mono">
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Category *
+            <label className="block text-[10px] font-bold text-[#7e7e7e] uppercase tracking-[1px] mb-1">
+              CATEGORY *
             </label>
             <select
               value={category}
               onChange={e => setCategory(e.target.value as any)}
-              className="w-full rounded-xl border border-slate-200 py-2.5 px-3 text-xs font-bold text-slate-800 focus:border-purple-500 focus:outline-none bg-white"
+              className="w-full bg-black border border-[#3c3c3c] py-2 px-3 text-xs font-bold text-white focus:border-white focus:outline-none uppercase"
             >
-              <option value="academic">Academic Excellence</option>
-              <option value="behavior">Classroom Behavior & Discipline</option>
-              <option value="attendance">Attendance & Punctuality</option>
-              <option value="sports">Sports & Physical Activities</option>
-              <option value="creativity">Art, Music & Creativity</option>
-              <option value="leadership">Leadership & Teamwork</option>
+              <option value="academic">ACADEMIC EXCELLENCE</option>
+              <option value="behavior">CONDUCT & DISCIPLINE</option>
+              <option value="attendance">ATTENDANCE & PUNCTUALITY</option>
+              <option value="sports">ATHLETICS & SPORTS</option>
+              <option value="creativity">INNOVATION & ARTS</option>
+              <option value="leadership">COMMAND & LEADERSHIP</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Rating Level *
+            <label className="block text-[10px] font-bold text-[#7e7e7e] uppercase tracking-[1px] mb-1">
+              ASSESSMENT LEVEL *
             </label>
             <div className="grid grid-cols-2 gap-2">
               {[
-                { id: 'outstanding', label: '🌟 Outstanding', color: 'bg-emerald-50 text-emerald-800 border-emerald-300' },
-                { id: 'good', label: '👍 Good', color: 'bg-blue-50 text-blue-800 border-blue-300' },
-                { id: 'satisfactory', label: '👌 Satisfactory', color: 'bg-amber-50 text-amber-800 border-amber-300' },
-                { id: 'needs_attention', label: '⚠️ Needs Attention', color: 'bg-rose-50 text-rose-800 border-rose-300' },
+                { id: 'outstanding', label: 'OUTSTANDING', color: 'border-[#0fa336] text-[#0fa336]' },
+                { id: 'good', label: 'COMMENDABLE', color: 'border-[#1c69d4] text-[#1c69d4]' },
+                { id: 'satisfactory', label: 'ACCEPTABLE', color: 'border-amber-500 text-amber-400' },
+                { id: 'needs_attention', label: 'NEEDS ATTENTION', color: 'border-[#e22718] text-[#e22718]' },
               ].map(item => (
                 <button
                   key={item.id}
                   type="button"
                   onClick={() => setRating(item.id as any)}
-                  className={`rounded-xl py-2 px-3 text-xs font-bold transition-all border ${
+                  className={`py-2 px-3 text-[10px] font-bold uppercase tracking-[1px] transition-all border ${
                     rating === item.id
-                      ? 'bg-purple-600 text-white border-purple-600 shadow-sm'
-                      : item.color
+                      ? 'bg-white text-black border-white'
+                      : `bg-black ${item.color}`
                   }`}
                 >
                   {item.label}
@@ -119,43 +124,43 @@ export const AddPerformanceModal: React.FC<AddPerformanceModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Teacher's Detailed Observation *
+            <label className="block text-[10px] font-bold text-[#7e7e7e] uppercase tracking-[1px] mb-1">
+              INSTRUCTOR DETAILED OBSERVATION *
             </label>
             <textarea
               required
               rows={3}
               value={remarks}
               onChange={e => setRemarks(e.target.value)}
-              placeholder="Describe the student's progress, attitude, and participation..."
-              className="w-full rounded-xl border border-slate-200 py-2 px-3 text-xs font-medium text-slate-800 focus:border-purple-500 focus:outline-none"
+              placeholder="Record cadet progress, attitude, and tactical participation..."
+              className="w-full bg-black border border-[#3c3c3c] py-2 px-3 text-xs font-bold text-white focus:border-white focus:outline-none uppercase"
             />
           </div>
 
           <div className="grid grid-cols-1 gap-2.5">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                🌟 Key Strengths
+              <label className="block text-[10px] font-bold text-[#7e7e7e] uppercase tracking-[1px] mb-1">
+                DEMONSTRATED STRENGTHS
               </label>
               <input
                 type="text"
                 value={strengths}
                 onChange={e => setStrengths(e.target.value)}
-                placeholder="e.g. Quick problem solver, active speaker"
-                className="w-full rounded-xl border border-slate-200 py-2 px-3 text-xs font-medium text-slate-800 focus:border-purple-500 focus:outline-none"
+                placeholder="e.g. Quick problem solver, active communicator"
+                className="w-full bg-black border border-[#3c3c3c] py-2 px-3 text-xs font-bold text-white focus:border-white focus:outline-none uppercase"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                🎯 Areas for Improvement
+              <label className="block text-[10px] font-bold text-[#7e7e7e] uppercase tracking-[1px] mb-1">
+                AREAS FOR DEVELOPMENT
               </label>
               <input
                 type="text"
                 value={areasToImprove}
                 onChange={e => setAreasToImprove(e.target.value)}
-                placeholder="e.g. Needs more practice in geometry homework"
-                className="w-full rounded-xl border border-slate-200 py-2 px-3 text-xs font-medium text-slate-800 focus:border-purple-500 focus:outline-none"
+                placeholder="e.g. Requires additional focus in geometry modules"
+                className="w-full bg-black border border-[#3c3c3c] py-2 px-3 text-xs font-bold text-white focus:border-white focus:outline-none uppercase"
               />
             </div>
           </div>
@@ -163,10 +168,10 @@ export const AddPerformanceModal: React.FC<AddPerformanceModalProps> = ({
           <div className="pt-2">
             <button
               type="submit"
-              className="w-full rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 py-3 text-xs font-black text-white shadow-lg shadow-purple-600/25 hover:from-purple-700 hover:to-pink-700 active:scale-95 transition-all flex items-center justify-center space-x-2"
+              className="w-full bg-white text-black py-3 text-xs font-bold uppercase tracking-[1.5px] hover:bg-[#e6e6e6] active:scale-95 transition-all flex items-center justify-center space-x-2"
             >
-              <Save className="h-4 w-4" />
-              <span>SAVE PERFORMANCE NOTE</span>
+              <Save className="h-4 w-4 text-[#1c69d4]" />
+              <span>COMMIT OBSERVATION</span>
             </button>
           </div>
         </form>

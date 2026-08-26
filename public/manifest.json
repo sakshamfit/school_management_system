@@ -1,0 +1,17 @@
+{
+  "short_name": "MS Public School",
+  "name": "M.S. PUBLIC SCHOOL - Smart Management App",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#FFF9F0",
+  "theme_color": "#F27D26",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "scope": "/"
+}

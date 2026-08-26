@@ -9,10 +9,6 @@ import {
   Edit2,
   Archive,
   RotateCcw,
-  Filter,
-  CheckCircle2,
-  AlertCircle,
-  MoreVertical,
 } from 'lucide-react';
 import { useSchool } from '../../context/SchoolContext';
 import { Student } from '../../types';
@@ -33,7 +29,7 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
   onOpenEditStudent,
   onOpenCollectFee,
 }) => {
-  const { db, archiveStudent, restoreStudent, currentUser } = useSchool();
+  const { db, archiveStudent, restoreStudent } = useSchool();
   const [selectedClassId, setSelectedClassId] = useState<string>(initialClassId || 'all');
   const [statusFilter, setStatusFilter] = useState<'active' | 'archived'>('active');
   const [searchQuery, setSearchQuery] = useState('');
@@ -64,58 +60,54 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
   }, [db.students, selectedClassId, statusFilter, searchQuery]);
 
   return (
-    <div className="space-y-4 pb-16">
+    <div className="space-y-6 pb-16 text-[#1d1d1f]">
       {/* Header Bar */}
-      <div className="rounded-3xl border border-orange-100 bg-white p-4 sm:p-5 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+      <div className="bg-white rounded-[18px] border border-[#e5e5ea] p-6 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#0066cc]/10 text-[#0066cc]">
               <GraduationCap className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-lg font-black text-slate-900">
-                Students Directory
+              <h2 className="text-xl font-semibold tracking-[-0.022em] text-[#1d1d1f]">
+                Student Directory
               </h2>
-              <p className="text-xs text-slate-500">
-                {filteredStudents.length} {statusFilter} students found
+              <p className="text-xs text-[#86868b]">
+                {filteredStudents.length} {statusFilter} students enrolled
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2.5">
             <button
               onClick={() =>
                 setStatusFilter(s => (s === 'active' ? 'archived' : 'active'))
               }
-              className={`rounded-xl px-3 py-2 text-xs font-bold transition-all ${
-                statusFilter === 'archived'
-                  ? 'bg-red-100 text-red-700 border border-red-200'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
+              className="apple-btn-secondary"
             >
-              {statusFilter === 'archived' ? 'Viewing Archived' : 'View Archived'}
+              {statusFilter === 'archived' ? 'Viewing Archived' : 'Archived Records'}
             </button>
 
             <button
               onClick={onOpenAddStudent}
-              className="inline-flex items-center space-x-1.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 px-4 py-2 text-xs font-black text-white shadow-md shadow-orange-500/25 hover:from-orange-600 hover:to-amber-700 active:scale-95 transition-all"
+              className="apple-btn-primary"
             >
-              <PlusCircle className="h-4 w-4" />
-              <span>+ Enroll Student</span>
+              <PlusCircle className="h-4 w-4 mr-2" />
+              <span>Enroll Student</span>
             </button>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-3 border-t border-slate-100">
+        <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-[#f0f0f0]">
           <div className="sm:col-span-2 relative">
-            <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
+            <Search className="absolute left-3.5 top-3 h-4 w-4 text-[#86868b]" />
             <input
               type="text"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Search by student name, roll number, admission no, or parent..."
-              className="w-full rounded-xl border border-slate-200 py-2 pl-10 pr-4 text-xs font-medium text-slate-800 placeholder-slate-400 focus:border-orange-500 focus:outline-none"
+              placeholder="Search by name, roll number, admission ID, or parent..."
+              className="apple-input pl-10"
             />
           </div>
 
@@ -123,12 +115,12 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
             <select
               value={selectedClassId}
               onChange={e => setSelectedClassId(e.target.value)}
-              className="w-full rounded-xl border border-orange-200 bg-orange-50/40 py-2 px-3 text-xs font-bold text-slate-800 focus:border-orange-500 focus:outline-none"
+              className="apple-input font-medium"
             >
-              <option value="all">All Classes ({db.students.length} Students)</option>
+              <option value="all">All Classes ({db.students.length} Total)</option>
               {db.classes.map(c => (
                 <option key={c.id} value={c.id}>
-                  {c.name} - Section {c.section}
+                  {c.name} (Section {c.section})
                 </option>
               ))}
             </select>
@@ -138,15 +130,15 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
 
       {/* Student Cards Grid */}
       {filteredStudents.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-orange-200 bg-white p-12 text-center">
-          <GraduationCap className="mx-auto h-12 w-12 text-orange-300 mb-2" />
-          <h4 className="text-sm font-bold text-slate-800">No Students Found</h4>
-          <p className="text-xs text-slate-500 mt-1">
+        <div className="bg-white rounded-[18px] border border-[#e5e5ea] p-12 text-center shadow-xs">
+          <GraduationCap className="mx-auto h-12 w-12 text-[#86868b] mb-3" />
+          <h4 className="text-base font-semibold text-[#1d1d1f]">No Students Found</h4>
+          <p className="text-xs text-[#86868b] mt-1">
             Try adjusting your search criteria or enroll a new student.
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredStudents.map(student => {
             const feeAccount = db.feeAccounts.find(fa => fa.studentId === student.id);
             const studentAttendance = db.attendance.filter(a => a.studentId === student.id);
@@ -161,14 +153,14 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
             return (
               <div
                 key={student.id}
-                className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs hover:border-orange-300 hover:shadow-md transition-all flex flex-col justify-between"
+                className="bg-white rounded-[18px] border border-[#e5e5ea] p-5 hover:border-[#0066cc]/40 transition-all shadow-xs flex flex-col justify-between group"
               >
                 <div>
                   {/* Top Profile Header */}
-                  <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start justify-between gap-3">
                     <div
                       onClick={() => onSelectStudent(student.id)}
-                      className="flex items-center space-x-3 cursor-pointer flex-1 min-w-0 group"
+                      className="flex items-center space-x-3.5 cursor-pointer flex-1 min-w-0"
                     >
                       <img
                         src={
@@ -176,74 +168,74 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                           `https://api.dicebear.com/7.x/adventurer/svg?seed=${student.name}`
                         }
                         alt={student.name}
-                        className="h-12 w-12 shrink-0 rounded-2xl object-cover border-2 border-orange-100 shadow-xs group-hover:scale-105 transition-transform"
+                        className="h-12 w-12 shrink-0 rounded-full object-cover bg-white apple-product-shadow"
                       />
                       <div className="min-w-0">
                         <div className="flex items-center space-x-1.5">
-                          <h4 className="font-extrabold text-xs sm:text-sm text-slate-900 group-hover:text-orange-600 truncate transition-colors">
+                          <h4 className="font-semibold text-sm text-[#1d1d1f] group-hover:text-[#0066cc] truncate transition-colors">
                             {student.name}
                           </h4>
-                          <span className="rounded bg-orange-100 px-1.5 py-0.2 text-[10px] font-black text-orange-800">
+                          <span className="bg-[#f5f5f7] px-2 py-0.5 rounded-full text-[10px] font-semibold text-[#0066cc]">
                             #{student.rollNumber}
                           </span>
                         </div>
-                        <p className="text-[11px] text-slate-500 truncate mt-0.5">
-                          {student.className} • Adm: {student.admissionNumber}
+                        <p className="text-xs text-[#86868b] truncate mt-0.5">
+                          {student.className} • Adm #{student.admissionNumber}
                         </p>
                       </div>
                     </div>
                   </div>
 
                   {/* Details stats */}
-                  <div className="mt-3.5 rounded-xl bg-slate-50 p-2.5 grid grid-cols-2 gap-2 text-[11px]">
+                  <div className="mt-4 bg-[#f5f5f7] rounded-xl p-3.5 grid grid-cols-2 gap-2 text-xs">
                     <div>
-                      <span className="text-slate-400 block text-[10px]">Parent:</span>
-                      <span className="font-bold text-slate-700 truncate block">
+                      <span className="text-[#86868b] block text-[11px]">Guardian:</span>
+                      <span className="font-semibold text-[#1d1d1f] truncate block">
                         {student.parentName}
                       </span>
                     </div>
 
                     <div>
-                      <span className="text-slate-400 block text-[10px]">Attendance:</span>
+                      <span className="text-[#86868b] block text-[11px]">Attendance:</span>
                       <span
-                        className={`font-bold ${
-                          Number(attPct) >= 75 ? 'text-emerald-700' : 'text-rose-600'
+                        className={`font-semibold ${
+                          Number(attPct) >= 75 ? 'text-[#30d158]' : 'text-[#ff3b30]'
                         }`}
                       >
-                        {attPct}% Rate
+                        {attPct}%
                       </span>
                     </div>
 
-                    <div className="col-span-2 pt-1 border-t border-slate-200/60 flex items-center justify-between">
-                      <span className="text-slate-400 text-[10px]">Fee Status:</span>
+                    <div className="col-span-2 pt-2 border-t border-[#e5e5ea] flex items-center justify-between">
+                      <span className="text-[#86868b] text-[11px]">Fee Balance:</span>
                       <span
-                        className={`font-black text-[11px] ${
-                          isDue ? 'text-rose-600' : 'text-emerald-600'
+                        className={`font-semibold ${
+                          isDue ? 'text-[#ff3b30]' : 'text-[#30d158]'
                         }`}
                       >
-                        {isDue ? `₹${feeAccount?.dueAmount} Due` : '✓ All Paid'}
+                        {isDue ? `₹${feeAccount?.dueAmount} Due` : '✓ Settled'}
                       </span>
                     </div>
                   </div>
                 </div>
 
                 {/* Card Actions Footer */}
-                <div className="mt-3.5 pt-2 border-t border-slate-100 flex items-center justify-between gap-1.5">
-                  <div className="flex items-center space-x-1">
+                <div className="mt-4 pt-3 border-t border-[#f0f0f0] flex items-center justify-between gap-2">
+                  <div className="flex items-center space-x-1.5">
                     <button
                       onClick={() => onSelectStudent(student.id)}
-                      className="rounded-lg bg-orange-50 px-2.5 py-1.5 text-[11px] font-extrabold text-orange-700 hover:bg-orange-100 flex items-center space-x-1"
+                      className="bg-[#f5f5f7] hover:bg-[#e5e5ea] px-3 py-1.5 rounded-full text-xs font-medium text-[#1d1d1f] flex items-center space-x-1.5 transition-colors"
                       title="Open Profile"
                     >
-                      <Eye className="h-3.5 w-3.5" />
+                      <Eye className="h-3.5 w-3.5 text-[#0066cc]" />
                       <span>Profile</span>
                     </button>
 
                     {student.parentPhone && (
                       <button
                         onClick={() => openWhatsAppFeeMessage(db.schoolInfo, student, feeAccount)}
-                        className="rounded-lg bg-emerald-50 px-2 py-1.5 text-[11px] font-bold text-emerald-700 hover:bg-emerald-100"
-                        title="Send WhatsApp"
+                        className="w-8 h-8 rounded-full bg-[#f5f5f7] text-[#30d158] hover:bg-[#30d158] hover:text-white flex items-center justify-center transition-colors"
+                        title="Send WhatsApp Notice"
                       >
                         <Phone className="h-3.5 w-3.5" />
                       </button>
@@ -251,8 +243,8 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
 
                     <button
                       onClick={() => onOpenCollectFee(student)}
-                      className="rounded-lg bg-blue-50 px-2 py-1.5 text-[11px] font-bold text-blue-700 hover:bg-blue-100"
-                      title="Fee payment"
+                      className="w-8 h-8 rounded-full bg-[#f5f5f7] text-[#ff9500] hover:bg-[#ff9500] hover:text-white flex items-center justify-center transition-colors"
+                      title="Collect Fee"
                     >
                       <CreditCard className="h-3.5 w-3.5" />
                     </button>
@@ -261,7 +253,7 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                   <div className="flex items-center space-x-1">
                     <button
                       onClick={() => onOpenEditStudent(student)}
-                      className="rounded-lg p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                      className="w-8 h-8 rounded-full bg-[#f5f5f7] text-[#86868b] hover:text-[#1d1d1f] hover:bg-[#e5e5ea] flex items-center justify-center transition-colors"
                       title="Edit Student"
                     >
                       <Edit2 className="h-3.5 w-3.5" />
@@ -270,7 +262,7 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                     {student.status === 'active' ? (
                       <button
                         onClick={() => setConfirmArchiveStudent(student)}
-                        className="rounded-lg p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                        className="w-8 h-8 rounded-full bg-[#f5f5f7] text-[#86868b] hover:text-[#ff3b30] hover:bg-[#ff3b30]/10 flex items-center justify-center transition-colors"
                         title="Archive Record"
                       >
                         <Archive className="h-3.5 w-3.5" />
@@ -278,7 +270,7 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                     ) : (
                       <button
                         onClick={() => restoreStudent(student.id)}
-                        className="rounded-lg p-1.5 text-emerald-600 hover:bg-emerald-50"
+                        className="w-8 h-8 rounded-full bg-[#30d158]/10 text-[#30d158] hover:bg-[#30d158] hover:text-white flex items-center justify-center transition-colors"
                         title="Restore Student"
                       >
                         <RotateCcw className="h-3.5 w-3.5" />
@@ -294,23 +286,23 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
 
       {/* Non-Destructive Soft Archive Confirmation Modal */}
       {confirmArchiveStudent && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-xs animate-in fade-in">
-          <div className="w-full max-w-sm rounded-3xl bg-white p-5 shadow-2xl space-y-4">
-            <div className="flex items-center space-x-2 text-amber-600">
-              <Archive className="h-6 w-6" />
-              <h4 className="font-extrabold text-slate-900 text-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-sm bg-white rounded-[20px] border border-[#e5e5ea] p-6 space-y-4 text-[#1d1d1f] shadow-2xl">
+            <div className="flex items-center space-x-2.5 text-[#ff3b30]">
+              <Archive className="h-5 w-5" />
+              <h4 className="font-semibold text-base">
                 Archive Student Record?
               </h4>
             </div>
 
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Are you sure you want to archive <strong>{confirmArchiveStudent.name}</strong>? School safety policy ensures historical attendance, fees, and results are never deleted and can be restored at any time.
+            <p className="text-xs text-[#86868b] leading-relaxed">
+              Are you sure you want to archive <strong>{confirmArchiveStudent.name}</strong>? Historical attendance, fees, and results are safely preserved and can be restored at any time.
             </p>
 
             <div className="flex items-center justify-end space-x-2 pt-2">
               <button
                 onClick={() => setConfirmArchiveStudent(null)}
-                className="rounded-xl px-3.5 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100"
+                className="apple-btn-secondary"
               >
                 Cancel
               </button>
@@ -319,9 +311,9 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                   archiveStudent(confirmArchiveStudent.id);
                   setConfirmArchiveStudent(null);
                 }}
-                className="rounded-xl bg-red-600 px-4 py-2 text-xs font-bold text-white hover:bg-red-700"
+                className="px-4 py-2 text-xs font-semibold text-white bg-[#ff3b30] hover:bg-[#d70015] rounded-full transition-all"
               >
-                Archive Safely
+                Confirm Archive
               </button>
             </div>
           </div>

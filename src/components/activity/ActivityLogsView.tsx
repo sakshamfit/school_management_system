@@ -2,12 +2,9 @@ import React, { useState } from 'react';
 import {
   History,
   Download,
-  Upload,
   RefreshCw,
-  Clock,
   ShieldCheck,
   Search,
-  CheckCircle2,
 } from 'lucide-react';
 import { useSchool } from '../../context/SchoolContext';
 import { formatDate } from '../../utils/helpers';
@@ -15,7 +12,6 @@ import { formatDate } from '../../utils/helpers';
 export const ActivityLogsView: React.FC = () => {
   const { db, resetDatabaseToDemo } = useSchool();
   const [searchQuery, setSearchQuery] = useState('');
-  const [copiedData, setCopiedData] = useState(false);
 
   const filteredLogs = db.activityLogs.filter(log => {
     if (!searchQuery.trim()) return true;
@@ -38,81 +34,79 @@ export const ActivityLogsView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-5 pb-16">
+    <div className="space-y-6 pb-16 text-[#1d1d1f]">
       {/* Header */}
-      <div className="rounded-3xl border border-orange-100 bg-white p-4 sm:p-5 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+      <div className="bg-white rounded-[18px] border border-[#e5e5ea] p-6 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#0066cc]/10 text-[#0066cc]">
               <History className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-lg font-black text-slate-900">
-                School Audit Logs & Data Safety
+              <h2 className="text-xl font-semibold tracking-[-0.022em] text-[#1d1d1f]">
+                System Activity & Audit Logs
               </h2>
-              <p className="text-xs text-slate-500">
-                Non-destructive audit trails, real-time activity tracking & complete database backup
+              <p className="text-xs text-[#86868b]">
+                Real-time activity audit trails, faculty action logs, and data backups
               </p>
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={exportBackupJSON}
-              className="inline-flex items-center space-x-1.5 rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white hover:bg-slate-800 active:scale-95 transition-all shadow-xs"
-            >
-              <Download className="h-4 w-4" />
-              <span>Export Full Backup</span>
-            </button>
-          </div>
+          <button
+            onClick={exportBackupJSON}
+            className="apple-btn-primary"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            <span>Export Full Backup</span>
+          </button>
         </div>
       </div>
 
-      {/* Safety Banner */}
-      <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 flex items-center space-x-3 text-xs text-emerald-900">
-        <ShieldCheck className="h-6 w-6 text-emerald-600 shrink-0" />
+      {/* Security Banner */}
+      <div className="bg-[#30d158]/10 border border-[#30d158]/30 rounded-[18px] p-4 flex items-center space-x-3.5 text-xs text-[#1d1d1f]">
+        <ShieldCheck className="h-5 w-5 text-[#30d158] shrink-0" />
         <div>
-          <span className="font-bold">Protected School Data Policy:</span> All teacher actions, attendance submissions, fee receipts, and marksheet modifications are immutable and audited. Student records use soft-archiving to protect lifelong records.
+          <span className="font-semibold text-[#30d158]">Secure Audit Trail:</span> All teacher submissions, fee collections, and report card revisions are timestamped and logged for administrative compliance.
         </div>
       </div>
 
       {/* Logs Table */}
-      <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs space-y-3">
-        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+      <div className="bg-white rounded-[18px] border border-[#e5e5ea] p-6 space-y-4 shadow-xs">
+        <div className="flex items-center justify-between pb-3 border-b border-[#f0f0f0]">
           <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
+            <Search className="absolute left-3.5 top-3 h-4 w-4 text-[#86868b]" />
             <input
               type="text"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Search audit trail..."
-              className="w-full rounded-xl border border-slate-200 py-1.5 pl-9 pr-3 text-xs font-medium text-slate-800 placeholder-slate-400 focus:border-orange-500 focus:outline-none"
+              className="apple-input pl-10"
             />
           </div>
 
           <button
             onClick={resetDatabaseToDemo}
-            className="text-xs font-bold text-orange-600 hover:underline flex items-center space-x-1"
+            className="text-xs font-semibold text-[#ff3b30] hover:underline flex items-center space-x-1.5 px-3 py-1.5 rounded-full hover:bg-[#ff3b30]/10 transition-colors"
           >
             <RefreshCw className="h-3.5 w-3.5" />
             <span>Reset Demo DB</span>
           </button>
         </div>
 
-        <div className="divide-y divide-slate-100 max-h-[60vh] overflow-y-auto pr-1">
+        <div className="divide-y divide-[#f0f0f0] max-h-[60vh] overflow-y-auto pr-1">
           {filteredLogs.map(log => (
-            <div key={log.id} className="py-3 flex items-start justify-between text-xs gap-3">
-              <div className="space-y-0.5">
+            <div key={log.id} className="py-3.5 flex items-start justify-between text-xs gap-3">
+              <div className="space-y-1">
                 <div className="flex items-center space-x-2">
-                  <span className="font-extrabold text-slate-900">{log.userName}</span>
-                  <span className="rounded bg-slate-100 px-1.5 py-0.2 text-[10px] font-mono text-slate-600">
+                  <span className="font-semibold text-[#1d1d1f]">{log.userName}</span>
+                  <span className="bg-[#f5f5f7] px-2 py-0.5 rounded-full text-[10px] font-semibold text-[#0066cc]">
                     {log.action}
                   </span>
                 </div>
-                <p className="text-slate-600">{log.details}</p>
+                <p className="text-[#86868b] text-xs">{log.details}</p>
               </div>
 
-              <span className="text-[11px] text-slate-400 shrink-0 font-medium">
+              <span className="text-[11px] text-[#86868b] shrink-0">
                 {formatDate(log.timestamp.slice(0, 10))} • {log.timestamp.slice(11, 16)}
               </span>
             </div>

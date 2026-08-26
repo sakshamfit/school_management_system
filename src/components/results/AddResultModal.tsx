@@ -5,10 +5,6 @@ import {
   Plus,
   Trash2,
   Save,
-  CheckCircle2,
-  User,
-  GraduationCap,
-  Sparkles,
 } from 'lucide-react';
 import { useSchool } from '../../context/SchoolContext';
 import { Student, SubjectMarks, StudentResult } from '../../types';
@@ -141,39 +137,39 @@ export const AddResultModal: React.FC<AddResultModalProps> = ({
     'Annual Final Examination 2025-26',
     'Half-Yearly Examination 2025-26',
     'Quarterly Examination',
-    'Unit Test 1 (Formative Assessment)',
-    'Unit Test 2',
-    'Periodic Test 1',
+    'Unit Test 1',
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-2 sm:p-4 backdrop-blur-sm animate-in fade-in overflow-y-auto">
-      <div className="w-full max-w-xl rounded-3xl bg-white shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-3 sm:p-4 backdrop-blur-sm animate-in fade-in overflow-y-auto">
+      <div className="w-full max-w-xl bg-white rounded-[20px] border border-[#e5e5ea] shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col text-[#1d1d1f]">
         {/* Header */}
-        <div className="flex items-center justify-between bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 p-5 text-white shrink-0">
-          <div className="flex items-center space-x-2.5">
-            <Award className="h-6 w-6 text-amber-300" />
+        <div className="flex items-center justify-between p-6 border-b border-[#f0f0f0] shrink-0">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#af52de]/10 text-[#af52de]">
+              <Award className="h-5 w-5" />
+            </div>
             <div>
-              <h3 className="text-base sm:text-lg font-black">Create Student Marksheet / Report Card</h3>
-              <p className="text-[11px] text-purple-100">
-                {currentStudent ? `${currentStudent.name} • ${currentStudent.className} (Roll #${currentStudent.rollNumber})` : 'Enter Subject Marks & Grades'}
+              <h3 className="font-semibold text-base">Record Student Evaluation</h3>
+              <p className="text-xs text-[#86868b]">
+                {currentStudent ? `${currentStudent.name} • ${currentStudent.className} (Roll #${currentStudent.rollNumber})` : 'Enter subject marks & grades'}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="rounded-full bg-white/20 p-1.5 text-white hover:bg-white/30 transition-colors"
+            className="w-8 h-8 rounded-full bg-[#f5f5f7] text-[#86868b] hover:text-[#1d1d1f] flex items-center justify-center transition-colors"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1">
-          {/* Class & Student Selection if not locked */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-purple-50/60 p-3.5 rounded-2xl border border-purple-100">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto flex-1">
+          {/* Class & Student Selection */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-[#f5f5f7] p-4 rounded-xl border border-[#e5e5ea]">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-[#86868b] mb-1">
                 Select Class *
               </label>
               <select
@@ -185,7 +181,7 @@ export const AddResultModal: React.FC<AddResultModalProps> = ({
                   );
                   if (firstInClass) setSelectedStudentId(firstInClass.id);
                 }}
-                className="w-full rounded-xl border border-purple-200 bg-white py-2 px-3 text-xs font-bold text-slate-800 focus:border-purple-500 focus:outline-none"
+                className="apple-input bg-white font-medium"
               >
                 {db.classes.map(c => (
                   <option key={c.id} value={c.id}>
@@ -196,16 +192,16 @@ export const AddResultModal: React.FC<AddResultModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-[#86868b] mb-1">
                 Select Student *
               </label>
               <select
                 value={selectedStudentId}
                 onChange={e => setSelectedStudentId(e.target.value)}
-                className="w-full rounded-xl border border-purple-200 bg-white py-2 px-3 text-xs font-bold text-slate-800 focus:border-purple-500 focus:outline-none"
+                className="apple-input bg-white font-medium"
               >
                 {classStudents.length === 0 ? (
-                  <option value="">No students in this class</option>
+                  <option value="">No Students Registered</option>
                 ) : (
                   classStudents.map(s => (
                     <option key={s.id} value={s.id}>
@@ -220,8 +216,8 @@ export const AddResultModal: React.FC<AddResultModalProps> = ({
           {/* Exam Details */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Examination Title *
+              <label className="block text-xs font-semibold text-[#86868b] mb-1">
+                Examination Name *
               </label>
               <input
                 type="text"
@@ -229,46 +225,46 @@ export const AddResultModal: React.FC<AddResultModalProps> = ({
                 value={examName}
                 onChange={e => setExamName(e.target.value)}
                 placeholder="e.g. Annual Final Examination"
-                className="w-full rounded-xl border border-slate-200 py-2 px-3 text-xs font-bold text-slate-800 focus:border-purple-500 focus:outline-none"
+                className="apple-input"
               />
               {/* Quick Exam Presets */}
-              <div className="mt-1.5 flex flex-wrap gap-1">
-                {examPresets.slice(0, 3).map(preset => (
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {examPresets.map(preset => (
                   <button
                     key={preset}
                     type="button"
                     onClick={() => setExamName(preset)}
-                    className="text-[10px] bg-slate-100 hover:bg-purple-100 text-slate-600 hover:text-purple-800 px-2 py-0.5 rounded-md font-semibold transition-colors"
+                    className="text-[11px] bg-[#f5f5f7] hover:bg-[#e5e5ea] text-[#86868b] hover:text-[#1d1d1f] px-2.5 py-0.5 rounded-full font-medium transition-colors"
                   >
-                    {preset.split(' ')[0]} {preset.split(' ')[1]}
+                    {preset}
                   </button>
                 ))}
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-[#86868b] mb-1">
                 Examination Date
               </label>
               <input
                 type="date"
                 value={examDate}
                 onChange={e => setExamDate(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 py-2 px-3 text-xs font-bold text-slate-800 focus:border-purple-500 focus:outline-none"
+                className="apple-input"
               />
             </div>
           </div>
 
           {/* Subject Marks Table */}
-          <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-3.5 space-y-2.5">
-            <div className="flex items-center justify-between pb-1">
-              <span className="text-xs font-bold text-slate-700">Subject Marks Breakdown</span>
+          <div className="bg-[#f5f5f7] rounded-xl p-4 border border-[#e5e5ea] space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-[#86868b]">Subject Scores Matrix</span>
               <button
                 type="button"
                 onClick={addSubjectRow}
-                className="inline-flex items-center space-x-1 text-xs font-bold text-purple-700 hover:text-purple-900 bg-purple-100/60 px-2.5 py-1 rounded-lg"
+                className="inline-flex items-center space-x-1 text-xs font-semibold text-[#0066cc] bg-white px-2.5 py-1 rounded-full border border-[#e5e5ea] shadow-xs"
               >
-                <Plus className="h-3.5 w-3.5" />
+                <Plus className="h-3 w-3" />
                 <span>Add Subject</span>
               </button>
             </div>
@@ -282,7 +278,7 @@ export const AddResultModal: React.FC<AddResultModalProps> = ({
                     value={sub.subject}
                     onChange={e => updateSubjectMarks(idx, 'subject', e.target.value)}
                     placeholder="Subject Name"
-                    className="flex-1 rounded-xl border border-slate-200 bg-white py-1.5 px-3 text-xs font-bold text-slate-800"
+                    className="flex-1 apple-input bg-white py-1.5 text-xs font-medium"
                   />
                   <input
                     type="number"
@@ -292,9 +288,9 @@ export const AddResultModal: React.FC<AddResultModalProps> = ({
                     value={sub.obtainedMarks}
                     onChange={e => updateSubjectMarks(idx, 'obtainedMarks', Number(e.target.value))}
                     placeholder="Obt"
-                    className="w-16 rounded-xl border border-slate-200 bg-white py-1.5 px-2 text-xs font-black text-center text-slate-800"
+                    className="w-16 apple-input bg-white py-1.5 px-2 text-xs font-semibold text-center"
                   />
-                  <span className="text-xs text-slate-400 font-bold">/</span>
+                  <span className="text-xs text-[#86868b]">/</span>
                   <input
                     type="number"
                     required
@@ -302,16 +298,16 @@ export const AddResultModal: React.FC<AddResultModalProps> = ({
                     value={sub.maxMarks}
                     onChange={e => updateSubjectMarks(idx, 'maxMarks', Number(e.target.value))}
                     placeholder="Max"
-                    className="w-16 rounded-xl border border-slate-200 bg-white py-1.5 px-2 text-xs font-bold text-center text-slate-800"
+                    className="w-16 apple-input bg-white py-1.5 px-2 text-xs text-center text-[#86868b]"
                   />
-                  <span className="w-9 text-center text-xs font-black text-purple-700 bg-purple-100 py-1 rounded-lg">
+                  <span className="w-10 text-center text-xs font-semibold text-[#0066cc] bg-white border border-[#e5e5ea] py-1.5 rounded-lg">
                     {sub.grade}
                   </span>
                   {subjects.length > 1 && (
                     <button
                       type="button"
                       onClick={() => removeSubjectRow(idx)}
-                      className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors"
+                      className="p-1.5 text-[#86868b] hover:text-[#ff3b30] transition-colors"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -322,42 +318,42 @@ export const AddResultModal: React.FC<AddResultModalProps> = ({
           </div>
 
           {/* Computed Score Bar */}
-          <div className="rounded-2xl bg-gradient-to-r from-purple-50 to-indigo-50 p-4 border border-purple-200 flex items-center justify-between shadow-xs">
+          <div className="bg-[#f5f5f7] p-4 rounded-xl border border-[#e5e5ea] flex items-center justify-between">
             <div>
-              <span className="text-[10px] uppercase font-bold text-purple-800 block">
-                Calculated Grand Total
+              <span className="text-[11px] font-semibold text-[#86868b] block">
+                Total Score & Aggregate
               </span>
-              <p className="text-base font-black text-purple-950">
+              <p className="text-sm font-semibold text-[#1d1d1f]">
                 {totalObt} / {totalMax} Marks ({overallPercentage}%)
               </p>
             </div>
             <div className="text-right">
-              <span className="rounded-xl bg-purple-600 px-3.5 py-1.5 text-xs font-black text-white shadow-xs">
-                Grade {overallGrade} ({overallPercentage >= 33 ? 'PASS' : 'FAIL'})
+              <span className="bg-white border border-[#e5e5ea] px-3 py-1 text-xs font-semibold text-[#0066cc] rounded-full shadow-xs">
+                Grade {overallGrade} ({overallPercentage >= 33 ? 'Passed' : 'Needs Improvement'})
               </span>
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Class Teacher's Observation & Remark
+            <label className="block text-xs font-semibold text-[#86868b] mb-1">
+              Teacher Evaluation & Remarks
             </label>
             <input
               type="text"
               value={remarks}
               onChange={e => setRemarks(e.target.value)}
-              placeholder="e.g. Outstanding analytical thinking in Science and Mathematics!"
-              className="w-full rounded-xl border border-slate-200 py-2.5 px-3 text-xs font-medium text-slate-800 focus:border-purple-500 focus:outline-none"
+              placeholder="e.g. Outstanding performance in Science and Mathematics."
+              className="apple-input"
             />
           </div>
 
           <div className="pt-2">
             <button
               type="submit"
-              className="w-full rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 py-3 text-xs font-black text-white shadow-lg shadow-purple-600/25 hover:from-purple-700 hover:to-indigo-700 active:scale-95 transition-all flex items-center justify-center space-x-2"
+              className="w-full apple-btn-primary py-3"
             >
-              <Save className="h-4 w-4" />
-              <span>SAVE & PUBLISH OFFICIAL MARKSHEET</span>
+              <Save className="h-4 w-4 mr-2" />
+              <span>Save & Publish Report Card</span>
             </button>
           </div>
         </form>
@@ -365,4 +361,3 @@ export const AddResultModal: React.FC<AddResultModalProps> = ({
     </div>
   );
 };
-

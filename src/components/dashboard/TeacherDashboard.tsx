@@ -6,12 +6,9 @@ import {
   Sparkles,
   Award,
   UserCheck,
-  Search,
   CheckCircle2,
   Clock,
   ArrowRight,
-  Phone,
-  BookOpen,
   Check,
 } from 'lucide-react';
 import { useSchool } from '../../context/SchoolContext';
@@ -70,171 +67,163 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
   };
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6 pb-16 text-[#1d1d1f]">
       {/* Auto-Attendance Present Success Banner */}
-      <div className="rounded-2xl bg-emerald-500 text-white p-3.5 px-5 shadow-md flex items-center justify-between animate-in fade-in slide-in-from-top-2 duration-300">
-        <div className="flex items-center space-x-2.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-emerald-600 font-black shadow-xs">
+      <div className="bg-white rounded-[18px] border border-[#e5e5ea] p-4 flex items-center justify-between shadow-xs">
+        <div className="flex items-center space-x-3">
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#30d158]/15 text-[#30d158]">
             <Check className="h-4 w-4" />
           </div>
           <div>
-            <p className="text-xs font-black tracking-wide">
-              ✓ TEACHER ATTENDANCE RECORDED: PRESENT
+            <p className="text-xs font-semibold text-[#1d1d1f]">
+              Faculty Attendance Logged: Present
             </p>
-            <p className="text-[11px] text-emerald-100">
-              System verified presence for {currentUser?.name} on {formatDate(todayStr)}. Synced with Principal.
+            <p className="text-[11px] text-[#86868b]">
+              Attendance verified for {currentUser?.name} on {formatDate(todayStr)}.
             </p>
           </div>
         </div>
-        <span className="hidden sm:inline-block text-[10px] font-bold uppercase bg-white/20 px-2.5 py-1 rounded-full backdrop-blur-sm">
-          Active Today
+        <span className="hidden sm:inline-block text-[11px] font-medium text-[#30d158] bg-[#30d158]/10 px-2.5 py-0.5 rounded-full">
+          Live Synced
         </span>
       </div>
 
       {/* Teacher Class Hero Card */}
-      <div className="rounded-3xl bg-[#F27D26] p-6 text-white shadow-lg shadow-orange-500/20 border border-white/30 backdrop-blur-md">
+      <div className="bg-white rounded-[18px] border border-[#e5e5ea] p-6 sm:p-8 shadow-xs">
         <div className="flex items-center justify-between">
-          <div className="inline-flex items-center space-x-2 rounded-full bg-white/20 px-3 py-1 text-xs font-semibold backdrop-blur-sm border border-white/30">
-            <span>👩‍🏫 Teacher Workspace</span>
-            <span>•</span>
-            <span>{formatDate(todayStr)}</span>
-          </div>
-          <span className="rounded-full bg-white/20 border border-white/30 px-3 py-0.5 text-xs font-bold text-white backdrop-blur-sm font-mono">
+          <span className="text-xs font-semibold text-[#0066cc] uppercase tracking-wider">
+            Faculty Workspace • {formatDate(todayStr)}
+          </span>
+          <span className="bg-[#f5f5f7] px-2.5 py-1 rounded-full text-xs font-mono text-[#86868b]">
             Code: {currentUser?.teacherCode || 'MSPS'}
           </span>
         </div>
 
         <div className="mt-3">
-          <h2 className="text-2xl sm:text-3xl font-black text-white">
-            Namaste, {currentUser?.name}!
+          <h2 className="text-2xl sm:text-3xl font-semibold tracking-[-0.025em] text-[#1d1d1f]">
+            Welcome, {currentUser?.name}!
           </h2>
-          <p className="text-xs sm:text-sm text-orange-100 mt-1">
-            Class Teacher for <strong>{assignedClass?.name || 'Class 5'}</strong> (Subject: {currentUser?.subject || 'All Subjects'})
+          <p className="text-[15px] text-[#86868b] mt-1">
+            Class Educator for <strong className="text-[#1d1d1f] font-semibold">{assignedClass?.name || 'Class 5'}</strong> ({currentUser?.subject || 'All Subjects'})
           </p>
         </div>
 
         {/* Attendance Status Callout */}
-        <div className="mt-4 rounded-2xl bg-white/15 p-4 backdrop-blur-md flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-white/30">
-          <div className="flex items-center space-x-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-[#F27D26] font-bold shadow-sm">
+        <div className="mt-6 bg-[#f5f5f7] rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center space-x-3.5">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#30d158] shadow-xs">
               <CalendarCheck className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-xs font-bold text-white">
+              <p className="text-sm font-semibold text-[#1d1d1f]">
                 {isAttendanceSubmittedToday
-                  ? `Class Attendance: Completed (${presentCount} Present, ${absentCount} Absent)`
-                  : "Class Attendance Not Taken Yet"}
+                  ? `Roll-Call Recorded (${presentCount} Present, ${absentCount} Absent)`
+                  : "Daily Roll-Call Pending"}
               </p>
-              <p className="text-[11px] text-orange-100">
-                {myStudents.length} enrolled students in {assignedClass?.name}
+              <p className="text-xs text-[#86868b]">
+                {myStudents.length} active students enrolled in {assignedClass?.name}
               </p>
             </div>
           </div>
 
           <button
             onClick={() => onNavigate('attendance', { classId: assignedClassId })}
-            className="inline-flex items-center justify-center space-x-1.5 rounded-2xl bg-white px-5 py-2.5 text-xs font-bold text-[#F27D26] shadow-md hover:scale-105 active:scale-95 transition-all"
+            className="apple-btn-primary"
           >
-            <span>{isAttendanceSubmittedToday ? 'Review Class Attendance' : 'Take Class Attendance Now'}</span>
-            <ArrowRight className="h-3.5 w-3.5" />
+            <span>{isAttendanceSubmittedToday ? 'Review Roll-Call' : 'Take Roll-Call'}</span>
+            <ArrowRight className="h-4 w-4 ml-1.5" />
           </button>
         </div>
       </div>
 
       {/* Main Quick Action Hub */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <button
           onClick={() => onNavigate('attendance', { classId: assignedClassId })}
-          className="flex flex-col items-center justify-center rounded-3xl bg-white/70 backdrop-blur-md p-5 text-center shadow-sm border border-white/60 hover:bg-white hover:scale-105 transition-all active:scale-95 group"
+          className="flex flex-col items-center justify-center bg-white border border-[#e5e5ea] p-5 rounded-[18px] text-center hover:border-[#0066cc]/40 transition-all shadow-xs group"
         >
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700 group-hover:scale-110 transition-transform">
-            <CalendarCheck className="h-6 w-6" />
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#30d158]/10 text-[#30d158] mb-3 group-hover:scale-105 transition-transform">
+            <CalendarCheck className="h-5 w-5" />
           </div>
-          <span className="mt-2.5 text-xs font-black text-[#1A2B48]">Take Attendance</span>
-          <span className="text-[10px] text-[#1A2B48]/50 mt-0.5">1-tap fast mark</span>
+          <span className="text-sm font-semibold text-[#1d1d1f]">Roll-Call</span>
+          <span className="text-xs text-[#86868b] mt-0.5">1-tap fast mark</span>
         </button>
 
         <button
           onClick={onOpenAddStudent}
-          className="flex flex-col items-center justify-center rounded-3xl bg-white/70 backdrop-blur-md p-5 text-center shadow-sm border border-white/60 hover:bg-white hover:scale-105 transition-all active:scale-95 group"
+          className="flex flex-col items-center justify-center bg-white border border-[#e5e5ea] p-5 rounded-[18px] text-center hover:border-[#0066cc]/40 transition-all shadow-xs group"
         >
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-100 text-[#F27D26] group-hover:scale-110 transition-transform">
-            <PlusCircle className="h-6 w-6" />
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#0066cc]/10 text-[#0066cc] mb-3 group-hover:scale-105 transition-transform">
+            <PlusCircle className="h-5 w-5" />
           </div>
-          <span className="mt-2.5 text-xs font-black text-[#1A2B48]">Add Student</span>
-          <span className="text-[10px] text-[#1A2B48]/50 mt-0.5">Camera photo</span>
+          <span className="text-sm font-semibold text-[#1d1d1f]">Add Student</span>
+          <span className="text-xs text-[#86868b] mt-0.5">Camera photo</span>
         </button>
 
         <button
           onClick={() => onNavigate('performance')}
-          className="flex flex-col items-center justify-center rounded-3xl bg-white/70 backdrop-blur-md p-5 text-center shadow-sm border border-white/60 hover:bg-white hover:scale-105 transition-all active:scale-95 group"
+          className="flex flex-col items-center justify-center bg-white border border-[#e5e5ea] p-5 rounded-[18px] text-center hover:border-[#0066cc]/40 transition-all shadow-xs group"
         >
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-100 text-purple-700 group-hover:scale-110 transition-transform">
-            <Sparkles className="h-6 w-6" />
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#5856d6]/10 text-[#5856d6] mb-3 group-hover:scale-105 transition-transform">
+            <Sparkles className="h-5 w-5" />
           </div>
-          <span className="mt-2.5 text-xs font-black text-[#1A2B48]">Student Remarks</span>
-          <span className="text-[10px] text-[#1A2B48]/50 mt-0.5">Performance notes</span>
+          <span className="text-sm font-semibold text-[#1d1d1f]">Remarks</span>
+          <span className="text-xs text-[#86868b] mt-0.5">Observations</span>
         </button>
 
         <button
           onClick={() => onNavigate('results')}
-          className="flex flex-col items-center justify-center rounded-3xl bg-white/70 backdrop-blur-md p-5 text-center shadow-sm border border-white/60 hover:bg-white hover:scale-105 transition-all active:scale-95 group"
+          className="flex flex-col items-center justify-center bg-white border border-[#e5e5ea] p-5 rounded-[18px] text-center hover:border-[#0066cc]/40 transition-all shadow-xs group"
         >
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-100 text-purple-700 group-hover:scale-110 transition-transform">
-            <Award className="h-6 w-6" />
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#ff2d55]/10 text-[#ff2d55] mb-3 group-hover:scale-105 transition-transform">
+            <Award className="h-5 w-5" />
           </div>
-          <span className="mt-2.5 text-xs font-black text-[#1A2B48]">Report Card & Marks</span>
-          <span className="text-[10px] text-purple-700 font-semibold mt-0.5">Generate & Print</span>
+          <span className="text-sm font-semibold text-[#1d1d1f]">Marksheets</span>
+          <span className="text-xs text-[#86868b] mt-0.5">Exams & grades</span>
         </button>
       </div>
 
       {/* Teacher Attendance Status & Controls */}
-      <div className="bg-white/50 backdrop-blur-sm border border-white/50 rounded-[32px] p-6 shadow-sm">
-        <div className="flex items-center justify-between pb-3 border-b border-black/5">
+      <div className="bg-white rounded-[18px] border border-[#e5e5ea] p-6 shadow-xs">
+        <div className="flex items-center justify-between pb-3 border-b border-[#f0f0f0]">
           <div className="flex items-center space-x-2">
-            <UserCheck className="h-5 w-5 text-[#F27D26]" />
-            <h3 className="font-black text-[#1A2B48] text-base">My Daily Presence Status</h3>
+            <UserCheck className="h-4 w-4 text-[#0066cc]" />
+            <h3 className="font-semibold text-[#1d1d1f] text-sm">Faculty Check-In Record</h3>
           </div>
           {myAttendanceToday && (
             <span
-              className={`rounded-full px-3 py-1 text-xs font-bold ${
+              className={`px-2.5 py-0.5 text-xs rounded-full font-medium ${
                 myAttendanceToday.status === 'present'
-                  ? 'bg-emerald-100 text-emerald-800'
+                  ? 'bg-[#30d158]/10 text-[#30d158]'
                   : myAttendanceToday.status === 'leave'
-                  ? 'bg-rose-100 text-rose-800'
-                  : 'bg-amber-100 text-amber-800'
+                  ? 'bg-[#ff3b30]/10 text-[#ff3b30]'
+                  : 'bg-[#ff9500]/10 text-[#ff9500]'
               }`}
             >
-              ✓ Marked: {myAttendanceToday.status.toUpperCase()}
+              Status: {myAttendanceToday.status.toUpperCase()}
             </span>
           )}
         </div>
 
-        <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-[#1A2B48]/70">
+        <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-[#86868b]">
             {myAttendanceToday?.status === 'present'
-              ? `You are automatically checked-in as Present for today (${formatDate(todayStr)}).`
-              : 'Update your status below if on leave or half day.'}
+              ? `You are checked-in as Present for today (${formatDate(todayStr)}).`
+              : 'Update your attendance status below if on leave or half day.'}
           </p>
 
           <div className="flex items-center space-x-2 w-full sm:w-auto">
             <button
               onClick={() => handleSelfCheckIn('present')}
-              className={`flex-1 sm:flex-initial rounded-2xl px-5 py-2.5 text-xs font-bold transition-all shadow-xs ${
-                myAttendanceToday?.status === 'present'
-                  ? 'bg-emerald-600 text-white shadow-emerald-600/20'
-                  : 'bg-white/80 text-emerald-700 hover:bg-emerald-50 border border-emerald-200'
+              className={`flex-1 sm:flex-initial apple-btn-primary ${
+                myAttendanceToday?.status === 'present' ? 'bg-[#30d158] hover:bg-[#28c04e]' : ''
               }`}
             >
               ✓ Present
             </button>
             <button
               onClick={() => handleSelfCheckIn('leave')}
-              className={`flex-1 sm:flex-initial rounded-2xl px-4 py-2.5 text-xs font-bold transition-all ${
-                myAttendanceToday?.status === 'leave'
-                  ? 'bg-rose-600 text-white'
-                  : 'bg-white/60 text-[#1A2B48]/70 hover:bg-white border border-white/80'
-              }`}
+              className="flex-1 sm:flex-initial apple-btn-secondary"
             >
               Apply Leave
             </button>
@@ -243,33 +232,33 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
       </div>
 
       {/* My Class Students Roster Preview */}
-      <div className="bg-white/50 backdrop-blur-sm border border-white/50 rounded-[32px] p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
+      <div className="bg-white rounded-[18px] border border-[#e5e5ea] p-6 shadow-xs">
+        <div className="flex items-center justify-between mb-4 pb-3 border-b border-[#f0f0f0]">
           <div>
-            <h3 className="font-black text-[#1A2B48] text-base">
-              {assignedClass?.name} Students ({myStudents.length})
+            <h3 className="font-semibold text-[#1d1d1f] text-base">
+              {assignedClass?.name} Student Roster ({myStudents.length})
             </h3>
-            <p className="text-xs text-[#1A2B48]/60">Tap student to view profile & records</p>
+            <p className="text-xs text-[#86868b]">Select student to view academic dossier & contact info</p>
           </div>
           <button
             onClick={() => onNavigate('students')}
-            className="text-xs font-bold text-[#F27D26] hover:underline inline-flex items-center space-x-1"
+            className="text-xs font-medium text-[#0066cc] hover:underline inline-flex items-center space-x-1"
           >
-            <span>Full Roster</span>
+            <span>Full Directory</span>
             <ArrowRight className="h-3.5 w-3.5" />
           </button>
         </div>
 
         {myStudents.length === 0 ? (
-          <div className="py-8 text-center bg-white/40 rounded-2xl border border-white/60">
-            <GraduationCap className="h-8 w-8 mx-auto text-[#1A2B48]/30 mb-2" />
-            <p className="text-xs font-bold text-[#1A2B48]/60">No students added to {assignedClass?.name} yet.</p>
+          <div className="py-8 text-center bg-[#f5f5f7] rounded-2xl">
+            <GraduationCap className="h-8 w-8 mx-auto text-[#86868b] mb-2" />
+            <p className="text-xs text-[#86868b]">No students added to {assignedClass?.name} yet.</p>
             <button
               onClick={onOpenAddStudent}
-              className="mt-3 inline-flex items-center space-x-1.5 rounded-xl bg-[#F27D26] px-4 py-2 text-xs font-bold text-white shadow-xs"
+              className="mt-3 apple-btn-primary"
             >
-              <PlusCircle className="h-3.5 w-3.5" />
-              <span>Add First Student</span>
+              <PlusCircle className="h-4 w-4 mr-1.5" />
+              <span>Enroll Student</span>
             </button>
           </div>
         ) : (
@@ -282,20 +271,20 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                 <div
                   key={student.id}
                   onClick={() => onSelectStudent(student.id)}
-                  className="cursor-pointer flex items-center justify-between rounded-2xl border border-white/80 bg-white/60 p-3.5 hover:border-orange-300 hover:bg-white transition-all group shadow-xs"
+                  className="cursor-pointer flex items-center justify-between bg-[#f5f5f7] rounded-2xl p-3.5 hover:bg-[#e5e5ea] transition-all group"
                 >
                   <div className="flex items-center space-x-3">
                     <img
                       src={student.photoUrl || `https://api.dicebear.com/7.x/adventurer/svg?seed=${student.name}`}
                       alt={student.name}
-                      className="h-10 w-10 rounded-xl object-cover border border-orange-200"
+                      className="h-10 w-10 rounded-full object-cover bg-white apple-product-shadow"
                     />
                     <div>
-                      <h4 className="font-bold text-xs text-[#1A2B48] group-hover:text-[#F27D26] transition-colors">
+                      <h4 className="font-semibold text-xs text-[#1d1d1f] group-hover:text-[#0066cc] transition-colors">
                         {student.name}
                       </h4>
-                      <p className="text-[11px] text-[#1A2B48]/50">
-                        Roll No: {student.rollNumber} • Adm: {student.admissionNumber}
+                      <p className="text-[11px] text-[#86868b]">
+                        Roll #{student.rollNumber} • Adm #{student.admissionNumber}
                       </p>
                     </div>
                   </div>
@@ -303,16 +292,16 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   <div className="text-right">
                     {todayAtt ? (
                       <span
-                        className={`rounded-full px-2.5 py-0.5 text-[10px] font-black ${
+                        className={`px-2.5 py-0.5 text-[10px] rounded-full font-semibold ${
                           todayAtt.status === 'present'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : 'bg-rose-100 text-rose-800'
+                            ? 'bg-[#30d158]/15 text-[#30d158]'
+                            : 'bg-[#ff3b30]/15 text-[#ff3b30]'
                         }`}
                       >
                         {todayAtt.status.toUpperCase()}
                       </span>
                     ) : (
-                      <span className="rounded-full bg-slate-200/80 px-2.5 py-0.5 text-[10px] font-semibold text-slate-600">
+                      <span className="bg-white px-2.5 py-0.5 rounded-full text-[10px] text-[#86868b] shadow-xs">
                         Pending
                       </span>
                     )}

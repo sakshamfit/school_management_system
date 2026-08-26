@@ -19,6 +19,29 @@ import {
 } from '../types';
 import { INITIAL_SCHOOL_DATABASE } from '../data/initialData';
 import { generateTeacherCode, generateReceiptNumber, getTodayDateString } from '../utils/helpers';
+import {
+  seedInitialDatabaseIfNeeded,
+  subscribeToSchoolDatabase,
+  saveSchoolInfoToFirestore,
+  saveUserToFirestore,
+  deleteUserFromFirestore,
+  saveClassToFirestore,
+  deleteClassFromFirestore,
+  saveStudentToFirestore,
+  deleteStudentFromFirestore,
+  saveAttendanceBatchToFirestore,
+  saveTeacherAttendanceToFirestore,
+  saveFeeAccountToFirestore,
+  saveFeeTransactionToFirestore,
+  saveExamToFirestore,
+  saveResultToFirestore,
+  deleteResultFromFirestore,
+  savePerformanceToFirestore,
+  deletePerformanceFromFirestore,
+  saveAcademicYearToFirestore,
+  saveActivityLogToFirestore,
+  saveNotificationToFirestore,
+} from '../services/firestoreSync';
 
 const STORAGE_KEY = 'msps_school_database_v2';
 const AUTH_KEY = 'msps_auth_user_v2';
@@ -36,6 +59,10 @@ interface SchoolContextType {
   currentUser: User | null;
   adminImpersonation: AdminImpersonation | null;
   unreadNotificationCount: number;
+  isCloudConnected: boolean;
+  isCloudSyncing: boolean;
+  lastCloudSyncTime: string | null;
+  cloudError: string | null;
   
   // Auth
   loginPrincipal: (email: string, password: string) => { success: boolean; error?: string };
@@ -183,8 +210,12 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   });
 
   const [adminImpersonation, setAdminImpersonation] = useState<AdminImpersonation | null>(null);
+  const [isCloudConnected, setIsCloudConnected] = useState<boolean>(false);
+  const [isCloudSyncing, setIsCloudSyncing] = useState<boolean>(false);
+  const [lastCloudSyncTime, setLastCloudSyncTime] = useState<string | null>(null);
+  const [cloudError, setCloudError] = useState<string | null>(null);
 
-  // Sync database to local storage
+  // Sync database to local storage as instant local cache
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
@@ -202,6 +233,75 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setAdminImpersonation(null);
     }
   }, [currentUser]);
+
+  // Initialize Real-time Firestore Sync
+  useEffect(() => {
+    let unsubscribe: (() => void) | null = null;
+
+    const setupFirestoreRealtime = async () => {
+      try {
+        setIsCloudSyncing(true);
+        // Seed default template if firestore is completely empty
+        await seedInitialDatabaseIfNeeded();
+
+        // Subscribe to real-time updates from Firestore
+        unsubscribe = subscribeToSchoolDatabase(
+          updatedData => {
+            setDb(prev => {
+              const merged: SchoolDatabase = {
+                ...prev,
+                ...updatedData,
+              };
+
+              // Keep permanent principal active
+              const hasPrincipal = (merged.users || []).some(
+                u => u.role === 'principal' && u.email === 'mozammilalam1996@gmail.com'
+              );
+              if (!hasPrincipal) {
+                merged.users = [
+                  {
+                    id: 'usr_principal_01',
+                    name: 'Mozammil Alam',
+                    email: 'mozammilalam1996@gmail.com',
+                    role: 'principal',
+                    password: '9931066436@',
+                    phone: '+91 99310 66436',
+                    status: 'active',
+                    joiningDate: '2026-01-01',
+                    createdAt: '2026-01-01T00:00:00.000Z',
+                  },
+                  ...(merged.users || []),
+                ];
+              }
+              return merged;
+            });
+
+            setIsCloudConnected(true);
+            setIsCloudSyncing(false);
+            setCloudError(null);
+            setLastCloudSyncTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+          },
+          err => {
+            console.error('Firestore real-time subscription error:', err);
+            setCloudError(err.message);
+            setIsCloudSyncing(false);
+          }
+        );
+      } catch (err: any) {
+        console.error('Failed to initialize Firestore real-time sync:', err);
+        setCloudError(err?.message || 'Database connection error');
+        setIsCloudSyncing(false);
+      }
+    };
+
+    setupFirestoreRealtime();
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, []);
 
   // Activity logger helper
   const logActivity = useCallback((
@@ -225,6 +325,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       ...prev,
       activityLogs: [newLog, ...prev.activityLogs.slice(0, 199)],
     }));
+    saveActivityLogToFirestore(newLog).catch(e => console.error('Error logging to Firestore:', e));
   }, [currentUser, adminImpersonation]);
 
   // Authentication methods
@@ -288,15 +389,17 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       createdAt: new Date().toISOString(),
     };
 
+    const updatedSchoolInfo: SchoolInfo = {
+      ...db.schoolInfo,
+      name: data.schoolName.trim() || 'M.S. PUBLIC SCHOOL',
+      email: data.email.trim().toLowerCase(),
+      phone: data.phone || db.schoolInfo.phone,
+      setupCompleted: true,
+    };
+
     setDb(prev => ({
       ...prev,
-      schoolInfo: {
-        ...prev.schoolInfo,
-        name: data.schoolName.trim() || 'M.S. PUBLIC SCHOOL',
-        email: data.email.trim().toLowerCase(),
-        phone: data.phone || prev.schoolInfo.phone,
-        setupCompleted: true,
-      },
+      schoolInfo: updatedSchoolInfo,
       users: [
         ...prev.users.filter(u => u.role !== 'principal'),
         newPrincipal,
@@ -304,6 +407,8 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }));
 
     setCurrentUser(newPrincipal);
+    saveSchoolInfoToFirestore(updatedSchoolInfo).catch(e => console.error(e));
+    saveUserToFirestore(newPrincipal).catch(e => console.error(e));
     logActivity('SCHOOL_SETUP', `School configured and Principal account created for ${data.principalName}`);
     return { success: true };
   };
@@ -385,7 +490,9 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       // If class is assigned, update class teacher as well
       const updatedClasses = prev.classes.map(c => {
         if (data.assignedClassId && c.id === data.assignedClassId) {
-          return { ...c, classTeacherId: newTeacher.id, classTeacherName: newTeacher.name };
+          const updatedCls = { ...c, classTeacherId: newTeacher.id, classTeacherName: newTeacher.name };
+          saveClassToFirestore(updatedCls).catch(e => console.error(e));
+          return updatedCls;
         }
         return c;
       });
@@ -397,6 +504,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       };
     });
 
+    saveUserToFirestore(newTeacher).catch(e => console.error(e));
     logActivity('TEACHER_ADDED', `Added new teacher: ${newTeacher.name} (Code: ${newTeacher.teacherCode})`, 'teacher', newTeacher.id);
     return { success: true, teacher: newTeacher };
   };
@@ -406,22 +514,27 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const teacher = prev.users.find(u => u.id === id);
       if (!teacher) return prev;
 
-      const updatedUsers = prev.users.map(u => (u.id === id ? { ...u, ...data } : u));
+      const updatedTeacher = { ...teacher, ...data };
+      const updatedUsers = prev.users.map(u => (u.id === id ? updatedTeacher : u));
       let updatedClasses = prev.classes;
 
       if (data.assignedClassId && data.assignedClassId !== teacher.assignedClassId) {
-        const assignedClass = prev.classes.find(c => c.id === data.assignedClassId);
         updatedClasses = prev.classes.map(c => {
           if (c.id === data.assignedClassId) {
-            return { ...c, classTeacherId: id, classTeacherName: data.name || teacher.name };
+            const upCls = { ...c, classTeacherId: id, classTeacherName: data.name || teacher.name };
+            saveClassToFirestore(upCls).catch(e => console.error(e));
+            return upCls;
           }
           if (c.id === teacher.assignedClassId) {
-            return { ...c, classTeacherId: undefined, classTeacherName: undefined };
+            const upCls = { ...c, classTeacherId: undefined, classTeacherName: undefined };
+            saveClassToFirestore(upCls).catch(e => console.error(e));
+            return upCls;
           }
           return c;
         });
       }
 
+      saveUserToFirestore(updatedTeacher).catch(e => console.error(e));
       return {
         ...prev,
         users: updatedUsers,
@@ -432,27 +545,45 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const archiveTeacher = (id: string) => {
-    setDb(prev => ({
-      ...prev,
-      users: prev.users.map(u => (u.id === id ? { ...u, status: 'archived' } : u)),
-    }));
+    setDb(prev => {
+      const teacher = prev.users.find(u => u.id === id);
+      if (teacher) {
+        saveUserToFirestore({ ...teacher, status: 'archived' }).catch(e => console.error(e));
+      }
+      return {
+        ...prev,
+        users: prev.users.map(u => (u.id === id ? { ...u, status: 'archived' } : u)),
+      };
+    });
     logActivity('TEACHER_ARCHIVED', `Archived teacher account for ID ${id}`, 'teacher', id);
   };
 
   const restoreTeacher = (id: string) => {
-    setDb(prev => ({
-      ...prev,
-      users: prev.users.map(u => (u.id === id ? { ...u, status: 'active' } : u)),
-    }));
+    setDb(prev => {
+      const teacher = prev.users.find(u => u.id === id);
+      if (teacher) {
+        saveUserToFirestore({ ...teacher, status: 'active' }).catch(e => console.error(e));
+      }
+      return {
+        ...prev,
+        users: prev.users.map(u => (u.id === id ? { ...u, status: 'active' } : u)),
+      };
+    });
     logActivity('TEACHER_RESTORED', `Restored teacher account for ID ${id}`, 'teacher', id);
   };
 
   const regenerateTeacherCode = (id: string): string => {
     const newCode = generateTeacherCode();
-    setDb(prev => ({
-      ...prev,
-      users: prev.users.map(u => (u.id === id ? { ...u, teacherCode: newCode } : u)),
-    }));
+    setDb(prev => {
+      const teacher = prev.users.find(u => u.id === id);
+      if (teacher) {
+        saveUserToFirestore({ ...teacher, teacherCode: newCode }).catch(e => console.error(e));
+      }
+      return {
+        ...prev,
+        users: prev.users.map(u => (u.id === id ? { ...u, teacherCode: newCode } : u)),
+      };
+    });
     logActivity('TEACHER_CODE_REGENERATED', `Regenerated teacher code to ${newCode}`, 'teacher', id);
     return newCode;
   };
@@ -471,14 +602,22 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       ...prev,
       classes: [...prev.classes, newClass],
     }));
+    saveClassToFirestore(newClass).catch(e => console.error(e));
     logActivity('CLASS_CREATED', `Created new class: ${newClass.name} - Section ${newClass.section}`, 'class', newClass.id);
   };
 
   const updateClass = (id: string, data: Partial<ClassRoom>) => {
-    setDb(prev => ({
-      ...prev,
-      classes: prev.classes.map(c => (c.id === id ? { ...c, ...data } : c)),
-    }));
+    setDb(prev => {
+      const cls = prev.classes.find(c => c.id === id);
+      if (cls) {
+        const updatedCls = { ...cls, ...data };
+        saveClassToFirestore(updatedCls).catch(e => console.error(e));
+      }
+      return {
+        ...prev,
+        classes: prev.classes.map(c => (c.id === id ? { ...c, ...data } : c)),
+      };
+    });
     logActivity('CLASS_UPDATED', `Updated class ${id}`, 'class', id);
   };
 
@@ -510,7 +649,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       createdAt: new Date().toISOString(),
     };
 
-    // Create default fee account (e.g. ₹24,000 annual fee)
+    // Create default fee account
     const newFeeAccount: FeeAccount = {
       id: `fee_${newStudent.id}`,
       studentId: newStudent.id,
@@ -528,7 +667,9 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       // Recalculate class student count
       const updatedClasses = prev.classes.map(c => {
         if (c.id === newStudent.classId) {
-          return { ...c, totalStudents: (c.totalStudents || 0) + 1 };
+          const upCls = { ...c, totalStudents: (c.totalStudents || 0) + 1 };
+          saveClassToFirestore(upCls).catch(e => console.error(e));
+          return upCls;
         }
         return c;
       });
@@ -541,6 +682,8 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       };
     });
 
+    saveStudentToFirestore(newStudent).catch(e => console.error(e));
+    saveFeeAccountToFirestore(newFeeAccount).catch(e => console.error(e));
     logActivity('STUDENT_ADDED', `Admitted student ${newStudent.name} (${newStudent.admissionNumber}) to ${newStudent.className}`, 'student', newStudent.id);
     return newStudent;
   };
@@ -555,17 +698,20 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       // Update fee account student name / class if changed
       const updatedFeeAccounts = prev.feeAccounts.map(fa => {
         if (fa.studentId === id) {
-          return {
+          const updatedFA = {
             ...fa,
             studentName: updatedStudent.name,
             rollNumber: updatedStudent.rollNumber,
             classId: updatedStudent.classId,
             className: updatedStudent.className,
           };
+          saveFeeAccountToFirestore(updatedFA).catch(e => console.error(e));
+          return updatedFA;
         }
         return fa;
       });
 
+      saveStudentToFirestore(updatedStudent).catch(e => console.error(e));
       return {
         ...prev,
         students: prev.students.map(s => (s.id === id ? updatedStudent : s)),
@@ -578,9 +724,14 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const archiveStudent = (id: string) => {
     setDb(prev => {
       const student = prev.students.find(s => s.id === id);
+      if (student) {
+        saveStudentToFirestore({ ...student, status: 'archived' }).catch(e => console.error(e));
+      }
       const updatedClasses = prev.classes.map(c => {
         if (student && c.id === student.classId && (c.totalStudents || 0) > 0) {
-          return { ...c, totalStudents: (c.totalStudents || 1) - 1 };
+          const upCls = { ...c, totalStudents: (c.totalStudents || 1) - 1 };
+          saveClassToFirestore(upCls).catch(e => console.error(e));
+          return upCls;
         }
         return c;
       });
@@ -597,9 +748,14 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const restoreStudent = (id: string) => {
     setDb(prev => {
       const student = prev.students.find(s => s.id === id);
+      if (student) {
+        saveStudentToFirestore({ ...student, status: 'active' }).catch(e => console.error(e));
+      }
       const updatedClasses = prev.classes.map(c => {
         if (student && c.id === student.classId) {
-          return { ...c, totalStudents: (c.totalStudents || 0) + 1 };
+          const upCls = { ...c, totalStudents: (c.totalStudents || 0) + 1 };
+          saveClassToFirestore(upCls).catch(e => console.error(e));
+          return upCls;
         }
         return c;
       });
@@ -640,7 +796,6 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }));
 
     setDb(prev => {
-      // Remove existing attendance records for this class & date, then add new
       const filtered = prev.attendance.filter(
         a => !(a.classId === classId && a.date === date)
       );
@@ -649,6 +804,8 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         attendance: [...filtered, ...newRecords],
       };
     });
+
+    saveAttendanceBatchToFirestore(newRecords).catch(e => console.error('Error saving attendance batch:', e));
 
     const presentCount = items.filter(i => i.status === 'present').length;
     const absentCount = items.filter(i => i.status === 'absent').length;
@@ -690,6 +847,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       };
     });
 
+    saveTeacherAttendanceToFirestore(record).catch(e => console.error(e));
     logActivity('TEACHER_ATTENDANCE_MARKED', `Teacher attendance marked for ${teacher.name}: ${status.toUpperCase()}`, 'teacher', teacherId);
   };
 
@@ -756,6 +914,8 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         : [...prev.feeAccounts, updatedFeeAccount],
     }));
 
+    saveFeeTransactionToFirestore(transaction, updatedFeeAccount).catch(e => console.error('Error saving fee tx:', e));
+
     logActivity(
       'FEE_COLLECTED',
       `Received fee of ₹${data.amount.toLocaleString('en-IN')} for ${student.name} (${student.className}) via ${data.paymentMethod} (Receipt: ${receiptNo})`,
@@ -775,12 +935,13 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const newDue = Math.max(0, newTotal - (feeAccount.paidAmount || 0));
       const newStatus = newDue === 0 ? 'paid' : (feeAccount.paidAmount || 0) > 0 ? 'partial' : 'due';
 
+      const updatedFA = { ...feeAccount, totalFee: newTotal, dueAmount: newDue, status: newStatus };
+      saveFeeAccountToFirestore(updatedFA).catch(e => console.error(e));
+
       return {
         ...prev,
         feeAccounts: prev.feeAccounts.map(fa =>
-          fa.studentId === studentId
-            ? { ...fa, totalFee: newTotal, dueAmount: newDue, status: newStatus }
-            : fa
+          fa.studentId === studentId ? updatedFA : fa
         ),
       };
     });
@@ -797,6 +958,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       ...prev,
       exams: [...prev.exams, newExam],
     }));
+    saveExamToFirestore(newExam).catch(e => console.error(e));
     logActivity('EXAM_CREATED', `Created examination: ${newExam.name} (${newExam.academicYear})`);
     return newExam;
   };
@@ -809,7 +971,6 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
 
     setDb(prev => {
-      // Remove any existing result for same student & exam
       const filtered = prev.results.filter(
         r => !(r.studentId === data.studentId && r.examName === data.examName)
       );
@@ -819,6 +980,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       };
     });
 
+    saveResultToFirestore(newResult).catch(e => console.error(e));
     logActivity('RESULT_SAVED', `Recorded result for ${data.studentName} in ${data.examName} (${data.percentage}% - Grade: ${data.grade})`, 'result', newResult.id);
     return newResult;
   };
@@ -836,6 +998,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       performance: [newRecord, ...prev.performance],
     }));
 
+    savePerformanceToFirestore(newRecord).catch(e => console.error(e));
     logActivity('PERFORMANCE_NOTE_ADDED', `Added ${data.category} performance feedback for ${data.studentName} (Rating: ${data.rating})`, 'student', data.studentId);
   };
 
@@ -847,23 +1010,27 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setDb(prev => {
       const updatedStudents = prev.students.map(s => {
         if (studentIds.includes(s.id)) {
-          return {
+          const updated = {
             ...s,
             classId: toClassId,
             className: toClass.name,
             updatedAt: new Date().toISOString(),
           };
+          saveStudentToFirestore(updated).catch(e => console.error(e));
+          return updated;
         }
         return s;
       });
 
       const updatedFeeAccounts = prev.feeAccounts.map(fa => {
         if (studentIds.includes(fa.studentId)) {
-          return {
+          const updatedFA = {
             ...fa,
             classId: toClassId,
             className: toClass.name,
           };
+          saveFeeAccountToFirestore(updatedFA).catch(e => console.error(e));
+          return updatedFA;
         }
         return fa;
       });
@@ -883,18 +1050,22 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const yearObj = db.academicYears.find(y => y.id === yearId);
     if (!yearObj) return;
 
+    const updatedSchoolInfo: SchoolInfo = {
+      ...db.schoolInfo,
+      currentAcademicYear: yearObj.name,
+    };
+
     setDb(prev => ({
       ...prev,
-      schoolInfo: {
-        ...prev.schoolInfo,
-        currentAcademicYear: yearObj.name,
-      },
-      academicYears: prev.academicYears.map(y => ({
-        ...y,
-        isCurrent: y.id === yearId,
-      })),
+      schoolInfo: updatedSchoolInfo,
+      academicYears: prev.academicYears.map(y => {
+        const up = { ...y, isCurrent: y.id === yearId };
+        saveAcademicYearToFirestore(up).catch(e => console.error(e));
+        return up;
+      }),
     }));
 
+    saveSchoolInfoToFirestore(updatedSchoolInfo).catch(e => console.error(e));
     logActivity('ACADEMIC_YEAR_CHANGED', `Switched active academic session to ${yearObj.name}`, 'academic_year', yearId);
   };
 
@@ -907,6 +1078,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       ...prev,
       academicYears: [...prev.academicYears, newYear],
     }));
+    saveAcademicYearToFirestore(newYear).catch(e => console.error(e));
     logActivity('ACADEMIC_YEAR_ADDED', `Added new academic year: ${newYear.name}`, 'academic_year', newYear.id);
   };
 
@@ -916,6 +1088,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       ...prev,
       results: prev.results.filter(r => r.id !== id),
     }));
+    deleteResultFromFirestore(id).catch(e => console.error(e));
     logActivity('RESULT_DELETED', `Deleted examination result`, 'result', id);
   };
 
@@ -924,6 +1097,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       ...prev,
       performance: prev.performance.filter(p => p.id !== id),
     }));
+    deletePerformanceFromFirestore(id).catch(e => console.error(e));
     logActivity('PERFORMANCE_DELETED', `Deleted performance note`, 'student', id);
   };
 
@@ -936,6 +1110,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       results: prev.results.filter(r => r.studentId !== id),
       performance: prev.performance.filter(p => p.studentId !== id),
     }));
+    deleteStudentFromFirestore(id).catch(e => console.error(e));
     logActivity('STUDENT_DELETED', `Permanently removed student records`, 'student', id);
   };
 
@@ -945,6 +1120,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       users: prev.users.filter(u => u.id !== id),
       teacherAttendance: prev.teacherAttendance.filter(ta => ta.teacherId !== id),
     }));
+    deleteUserFromFirestore(id).catch(e => console.error(e));
     logActivity('TEACHER_DELETED', `Permanently removed teacher`, 'teacher', id);
   };
 
@@ -953,27 +1129,21 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       ...prev,
       classes: prev.classes.filter(c => c.id !== id),
     }));
+    deleteClassFromFirestore(id).catch(e => console.error(e));
     logActivity('CLASS_DELETED', `Deleted class`, 'class', id);
   };
 
   // Settings & Notifications
   const updateSchoolInfo = (data: Partial<SchoolInfo>) => {
-    setDb(prev => {
-      const updated = {
-        ...prev,
-        schoolInfo: {
-          ...prev.schoolInfo,
-          ...data,
-        },
-      };
-      // Ensure immediately saved to localStorage
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      } catch (err) {
-        console.error('Failed to sync settings to localStorage', err);
-      }
-      return updated;
-    });
+    const updated: SchoolInfo = {
+      ...db.schoolInfo,
+      ...data,
+    };
+    setDb(prev => ({
+      ...prev,
+      schoolInfo: updated,
+    }));
+    saveSchoolInfoToFirestore(updated).catch(err => console.error('Failed to sync settings to Firestore', err));
     logActivity('SCHOOL_SETTINGS_UPDATED', `Updated school institutional details`);
   };
 
@@ -982,22 +1152,34 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const addPerformance = addPerformanceRecord;
 
   const markNotificationAsRead = (id: string) => {
-    setDb(prev => ({
-      ...prev,
-      notifications: prev.notifications.map(n => (n.id === id ? { ...n, isRead: true } : n)),
-    }));
+    setDb(prev => {
+      const updated = prev.notifications.map(n => (n.id === id ? { ...n, isRead: true } : n));
+      const target = updated.find(n => n.id === id);
+      if (target) {
+        saveNotificationToFirestore(target).catch(e => console.error(e));
+      }
+      return {
+        ...prev,
+        notifications: updated,
+      };
+    });
   };
 
   const markAllNotificationsAsRead = () => {
-    setDb(prev => ({
-      ...prev,
-      notifications: prev.notifications.map(n => ({ ...n, isRead: true })),
-    }));
+    setDb(prev => {
+      const updated = prev.notifications.map(n => ({ ...n, isRead: true }));
+      updated.forEach(n => saveNotificationToFirestore(n).catch(e => console.error(e)));
+      return {
+        ...prev,
+        notifications: updated,
+      };
+    });
   };
 
   const resetDatabaseToDemo = () => {
     setDb(INITIAL_SCHOOL_DATABASE);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_SCHOOL_DATABASE));
+    seedInitialDatabaseIfNeeded();
     logActivity('DEMO_RESET', 'Reset school database to initial default demo data');
   };
 
@@ -1010,6 +1192,10 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         currentUser,
         adminImpersonation,
         unreadNotificationCount,
+        isCloudConnected,
+        isCloudSyncing,
+        lastCloudSyncTime,
+        cloudError,
         loginPrincipal,
         setupSchoolAndPrincipal,
         loginTeacher,

@@ -4,12 +4,7 @@ import {
   PlusCircle,
   Search,
   Printer,
-  ChevronRight,
-  Sparkles,
-  BookOpen,
-  Share2,
   Trash2,
-  FileText,
   Phone,
 } from 'lucide-react';
 import { useSchool } from '../../context/SchoolContext';
@@ -26,7 +21,6 @@ interface ResultsViewProps {
 
 export const ResultsView: React.FC<ResultsViewProps> = ({
   onSelectStudent,
-  onOpenAddResult,
 }) => {
   const { db, deleteResult, currentUser } = useSchool();
   const [selectedClassId, setSelectedClassId] = useState<string>(
@@ -50,43 +44,43 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
   }, [db.results, selectedClassId, searchQuery]);
 
   return (
-    <div className="space-y-4 pb-16">
+    <div className="space-y-6 pb-16 text-[#1d1d1f]">
       {/* Header */}
-      <div className="rounded-3xl border border-orange-100 bg-white p-4 sm:p-5 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="bg-white rounded-[18px] border border-[#e5e5ea] p-6 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center space-x-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-purple-100 text-purple-600 shadow-xs">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#af52de]/10 text-[#af52de]">
               <Award className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-lg sm:text-xl font-black text-slate-900">
-                Examinations & Marksheets
+              <h2 className="text-xl font-semibold tracking-[-0.022em] text-[#1d1d1f]">
+                Examinations & Report Cards
               </h2>
-              <p className="text-xs text-slate-500">
-                Create report cards, print marksheets, and send results to parents via WhatsApp
+              <p className="text-xs text-[#86868b]">
+                Academic performance evaluation, printable marksheets, and WhatsApp delivery
               </p>
             </div>
           </div>
 
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="inline-flex items-center justify-center space-x-2 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-2.5 text-xs font-black text-white shadow-md shadow-purple-600/20 hover:from-purple-700 hover:to-indigo-700 active:scale-95 transition-all"
+            className="apple-btn-primary"
           >
-            <PlusCircle className="h-4 w-4" />
-            <span>+ Create Marksheet / Enter Marks</span>
+            <PlusCircle className="h-4 w-4 mr-2" />
+            <span>Record Exam Result</span>
           </button>
         </div>
 
         {/* Filters */}
-        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-3 border-t border-slate-100">
+        <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4 border-t border-[#f0f0f0]">
           <div className="relative">
-            <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
+            <Search className="absolute left-3.5 top-3 h-4 w-4 text-[#86868b]" />
             <input
               type="text"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Search student name or exam title..."
-              className="w-full rounded-xl border border-slate-200 py-1.5 pl-9 pr-3 text-xs font-medium text-slate-800 placeholder-slate-400 focus:border-purple-500 focus:outline-none"
+              placeholder="Search student or exam name..."
+              className="apple-input pl-10"
             />
           </div>
 
@@ -94,9 +88,9 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
             <select
               value={selectedClassId}
               onChange={e => setSelectedClassId(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white py-1.5 px-3 text-xs font-bold text-slate-800 focus:border-purple-500 focus:outline-none"
+              className="apple-input font-medium"
             >
-              <option value="all">All Classes ({db.results.length} Published Marksheets)</option>
+              <option value="all">All Classes ({db.results.length} results)</option>
               {db.classes.map(c => (
                 <option key={c.id} value={c.id}>
                   {c.name} - Section {c.section}
@@ -108,22 +102,22 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
       </div>
 
       {/* Results Grid */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         {filteredResults.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-slate-200 bg-white p-12 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-50 text-purple-600 mb-3">
+          <div className="bg-white rounded-[18px] border border-[#e5e5ea] p-12 text-center shadow-xs">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#f5f5f7] text-[#0066cc] mb-3">
               <Award className="h-6 w-6" />
             </div>
-            <h3 className="text-sm font-bold text-slate-800 mb-1">No Marksheets Created Yet</h3>
-            <p className="text-xs text-slate-500 max-w-sm mx-auto mb-4">
-              Enter subject scores for unit tests, midterms, or final exams to generate official report cards.
+            <h3 className="text-base font-semibold text-[#1d1d1f] mb-1">No Marksheets Generated</h3>
+            <p className="text-xs text-[#86868b] max-w-sm mx-auto mb-4">
+              Record subject scores for unit tests, midterms, or final exams to generate official report cards.
             </p>
             <button
               onClick={() => setIsAddModalOpen(true)}
-              className="inline-flex items-center space-x-2 rounded-2xl bg-purple-600 px-4 py-2 text-xs font-black text-white hover:bg-purple-700"
+              className="apple-btn-primary"
             >
-              <PlusCircle className="h-4 w-4" />
-              <span>Create First Marksheet</span>
+              <PlusCircle className="h-4 w-4 mr-2" />
+              <span>Record First Result</span>
             </button>
           </div>
         ) : (
@@ -132,54 +126,53 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
             return (
               <div
                 key={res.id}
-                className="rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-xs hover:border-purple-300 transition-all space-y-3"
+                className="bg-white rounded-[18px] border border-[#e5e5ea] p-5 hover:border-[#0066cc]/40 transition-all shadow-xs space-y-4 group"
               >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#f0f0f0] pb-3.5">
                   <div
                     onClick={() => onSelectStudent(res.studentId)}
-                    className="cursor-pointer group"
+                    className="cursor-pointer"
                   >
                     <div className="flex items-center space-x-2">
-                      <h4 className="font-extrabold text-sm text-slate-900 group-hover:text-purple-600">
+                      <h4 className="font-semibold text-sm text-[#1d1d1f] group-hover:text-[#0066cc] transition-colors">
                         {res.studentName}
                       </h4>
-                      <span className="rounded bg-purple-100 px-2 py-0.5 text-[10px] font-bold text-purple-800">
+                      <span className="bg-[#f5f5f7] px-2 py-0.5 rounded-full text-[10px] font-semibold text-[#0066cc]">
                         Roll #{res.rollNumber}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      {res.className} • <span className="font-semibold text-slate-700">{res.examName}</span> ({formatDate(res.examDate)})
+                    <p className="text-xs text-[#86868b] mt-0.5">
+                      {res.className} • <span className="font-semibold text-[#1d1d1f]">{res.examName}</span> ({formatDate(res.examDate)})
                     </p>
                   </div>
 
                   {/* Actions & Score */}
-                  <div className="flex items-center space-x-2.5">
-                    <div className="text-right mr-1">
-                      <span className="rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 px-3 py-1 text-xs font-black text-white shadow-xs">
+                  <div className="flex items-center space-x-2">
+                    <div className="text-right mr-2">
+                      <span className="bg-[#0066cc]/10 text-[#0066cc] px-2.5 py-1 rounded-full text-xs font-semibold">
                         Grade {res.grade} ({res.percentage}%)
                       </span>
-                      <p className="text-[10px] text-slate-400 mt-0.5 font-bold">
+                      <p className="text-[11px] text-[#86868b] mt-1">
                         {res.totalMarks}/{res.totalMaxMarks} Marks
                       </p>
                     </div>
 
                     <button
                       onClick={() => setViewingResult(res)}
-                      className="inline-flex items-center space-x-1 rounded-xl bg-orange-50 px-2.5 py-1.5 text-xs font-bold text-orange-700 hover:bg-orange-100 transition-colors border border-orange-200/60"
+                      className="apple-btn-secondary py-1.5 px-3 text-xs"
                       title="View & Print Official Marksheet"
                     >
-                      <Printer className="h-3.5 w-3.5" />
-                      <span className="hidden sm:inline">Print Marksheet</span>
+                      <Printer className="h-3.5 w-3.5 mr-1.5 text-[#0066cc]" />
+                      <span>Print Marksheet</span>
                     </button>
 
                     {studentObj && (
                       <button
                         onClick={() => openWhatsAppMarksheetMessage(db.schoolInfo, studentObj, res)}
-                        className="inline-flex items-center space-x-1 rounded-xl bg-emerald-50 px-2.5 py-1.5 text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-colors border border-emerald-200/60"
+                        className="w-8 h-8 rounded-full bg-[#f5f5f7] text-[#30d158] hover:bg-[#30d158] hover:text-white flex items-center justify-center transition-colors"
                         title="Send to Parent on WhatsApp"
                       >
                         <Phone className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">WhatsApp</span>
                       </button>
                     )}
 
@@ -189,35 +182,35 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                           deleteResult(res.id);
                         }
                       }}
-                      className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                      className="w-8 h-8 rounded-full bg-[#f5f5f7] text-[#86868b] hover:text-[#ff3b30] hover:bg-[#ff3b30]/10 flex items-center justify-center transition-colors"
                       title="Delete Record"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
                 </div>
 
                 {/* Subject Badges */}
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
                   {res.subjects.map(sub => (
                     <div
                       key={sub.subject}
-                      className="rounded-xl bg-slate-50 p-2 text-xs border border-slate-100"
+                      className="bg-[#f5f5f7] rounded-xl p-2.5 text-xs border border-[#e5e5ea]"
                     >
-                      <span className="text-slate-500 block text-[10px] truncate font-medium">{sub.subject}</span>
-                      <div className="flex items-baseline justify-between mt-0.5">
-                        <span className="font-black text-slate-800">
+                      <span className="text-[#86868b] block text-[11px] truncate font-medium">{sub.subject}</span>
+                      <div className="flex items-baseline justify-between mt-1">
+                        <span className="font-semibold text-[#1d1d1f] text-xs">
                           {sub.obtainedMarks}/{sub.maxMarks}
                         </span>
-                        <span className="font-black text-purple-700 text-[10px]">{sub.grade}</span>
+                        <span className="font-semibold text-[#0066cc] text-[11px]">{sub.grade}</span>
                       </div>
                     </div>
                   ))}
                 </div>
 
                 {res.remarks && (
-                  <p className="text-xs text-slate-600 bg-purple-50/40 p-2.5 rounded-xl border border-purple-100 italic">
-                    <strong className="not-italic text-purple-900 font-bold">Teacher's Note:</strong> "{res.remarks}"
+                  <p className="text-xs text-[#86868b] bg-[#f5f5f7] rounded-xl p-3 border border-[#e5e5ea]">
+                    <strong className="text-[#1d1d1f] font-semibold">Teacher Evaluation:</strong> "{res.remarks}"
                   </p>
                 )}
               </div>
@@ -251,4 +244,3 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
     </div>
   );
 };
-
