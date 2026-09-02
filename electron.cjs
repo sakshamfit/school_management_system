@@ -4,15 +4,7 @@ const fs = require('fs');
 
 let mainWindow;
 let backupService = null;
-
-// Setup secure storage mock for lib that expects electron.safeStorage
-// Inject safeStorage into require cache so secureStorage can use it
-try {
-  const secureStoragePath = path.join(__dirname, 'desktop', 'lib', 'secureStorage.js');
-  if (fs.existsSync(secureStoragePath)) {
-    // Will be required later, safeStorage will try to get it
-  }
-} catch (e) {}
+let databaseService = null;
 
 function getPreloadPath() {
   const possible = [
@@ -39,79 +31,73 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      sandbox: false, // Need false for preload to access ipcRenderer with contextBridge, but we keep isolation
+      sandbox: true, // Hardened: sandbox enabled
       preload: preloadPath,
       webSecurity: true,
       allowRunningInsecureContent: false,
+      enableRemoteModule: false,
     },
   });
 
-  // Open external links (e.g. WhatsApp, emails, docs, Google OAuth) in default browser
+  // Security: prevent new windows, open external in browser
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.includes('127.0.0.1') && url.includes('/callback')) {
+      return { action: 'allow' };
+    }
     if (url.startsWith('http:') || url.startsWith('https:') || url.startsWith('mailto:') || url.startsWith('tel:')) {
-      // Allow OAuth callback to 127.0.0.1 to be handled internally by auth server, not external
-      if (url.includes('127.0.0.1') && url.includes('/callback')) {
-        return { action: 'allow' };
-      }
       shell.openExternal(url);
       return { action: 'deny' };
     }
-    return { action: 'allow' };
+    return { action: 'deny' };
+  });
+
+  // Security: prevent navigation to external URLs
+  mainWindow.webContents.on('will-navigate', (event, navigationUrl) => {
+    const parsedUrl = new URL(navigationUrl);
+    if (parsedUrl.origin !== 'http://localhost:3000' && parsedUrl.origin !== 'http://127.0.0.1:3000' && !navigationUrl.includes('127.0.0.1')) {
+      // Allow file:// for production build
+      if (!navigationUrl.startsWith('file://')) {
+        event.preventDefault();
+      }
+    }
   });
 
   const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
+  const appVersion = app.getVersion();
+
   if (isDev && process.env.VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
   } else {
-    // Load production build
     const indexPath = path.join(__dirname, 'dist', 'index.html');
     mainWindow.loadFile(indexPath).catch(() => {
-      // Fallback dev server
       mainWindow.loadURL('http://localhost:3000');
     });
   }
 
-  // Set up Desktop Menu
+  // Production menu
   const template = [
     {
       label: 'File',
       submenu: [
-        {
-          label: 'Print Active Page / Receipt',
-          accelerator: 'CmdOrCtrl+P',
-          click: () => mainWindow.webContents.print(),
-        },
+        { label: 'Print', accelerator: 'CmdOrCtrl+P', click: () => mainWindow.webContents.print() },
         { type: 'separator' },
-        {
-          label: 'Exit M.S. Public School Portal',
-          accelerator: 'CmdOrCtrl+Q',
-          click: () => app.quit(),
-        },
+        { label: 'Exit', accelerator: 'CmdOrCtrl+Q', click: () => app.quit() },
       ],
     },
     {
       label: 'Edit',
       submenu: [
-        { role: 'undo' },
-        { role: 'redo' },
-        { type: 'separator' },
-        { role: 'cut' },
-        { role: 'copy' },
-        { role: 'paste' },
-        { role: 'selectAll' },
+        { role: 'undo' }, { role: 'redo' }, { type: 'separator' },
+        { role: 'cut' }, { role: 'copy' }, { role: 'paste' }, { role: 'selectAll' },
       ],
     },
     {
       label: 'View',
       submenu: [
-        { role: 'reload', accelerator: 'CmdOrCtrl+R' },
-        { role: 'forceReload', accelerator: 'CmdOrCtrl+Shift+R' },
-        { type: 'separator' },
-        { role: 'resetZoom' },
-        { role: 'zoomIn' },
-        { role: 'zoomOut' },
-        { type: 'separator' },
+        { role: 'reload' }, { role: 'forceReload' }, { type: 'separator' },
+        { role: 'resetZoom' }, { role: 'zoomIn' }, { role: 'zoomOut' }, { type: 'separator' },
         { role: 'togglefullscreen' },
+        ...(isDev ? [{ label: 'Toggle DevTools', accelerator: 'F12', click: () => mainWindow.webContents.toggleDevTools() }] : []),
       ],
     },
     {
@@ -119,18 +105,36 @@ function createWindow() {
       submenu: [
         {
           label: 'Open Backup Settings',
-          click: () => {
-            if (mainWindow) {
-              mainWindow.webContents.send('navigate-to', { tab: 'settings', subTab: 'backup' });
-            }
-          }
+          click: () => { if (mainWindow) mainWindow.webContents.send('navigate-to', { tab: 'settings', subTab: 'backup' }); }
         },
         { type: 'separator' },
         {
-          label: 'Create Local Safety Backup',
+          label: 'Create Safety Backup',
           click: async () => {
-            if (mainWindow) {
-              mainWindow.webContents.send('backup:progress', { stage: 'local-backup', message: 'Creating local safety backup...' });
+            if (mainWindow) mainWindow.webContents.send('backup:progress', { stage: 'local-backup', message: 'Creating local safety backup...' });
+            try {
+              const DatabaseService = require('./desktop/lib/database');
+              const dbService = new DatabaseService();
+              dbService.createSafetyBackup();
+            } catch (e) {}
+          }
+        },
+        {
+          label: 'Check Database Integrity',
+          click: async () => {
+            try {
+              const DatabaseService = require('./desktop/lib/database');
+              const dbService = new DatabaseService();
+              const result = dbService.checkIntegrity();
+              const { dialog } = require('electron');
+              dialog.showMessageBox(mainWindow, {
+                type: result.ok ? 'info' : 'error',
+                title: 'Database Integrity',
+                message: result.ok ? 'Database integrity check passed' : `Integrity check failed: ${result.error}`,
+              });
+            } catch (e) {
+              const { dialog } = require('electron');
+              dialog.showErrorBox('Database Check Failed', e.message);
             }
           }
         }
@@ -139,19 +143,10 @@ function createWindow() {
     {
       label: 'Help',
       submenu: [
-        {
-          label: 'School Support & Contact',
-          click: () => {
-            shell.openExternal('https://wa.me/919876543210');
-          },
-        },
+        { label: 'Support', click: () => shell.openExternal('https://wa.me/919876543210') },
         { type: 'separator' },
-        {
-          label: 'About M.S. Public School System',
-          click: () => {
-            shell.openExternal('https://mspublicschool.edu.in');
-          }
-        }
+        { label: `Version ${appVersion}`, enabled: false },
+        { label: 'About', click: () => shell.openExternal('https://mspublicschool.edu.in') },
       ],
     },
   ];
@@ -159,60 +154,66 @@ function createWindow() {
   const menu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(menu);
 
-  // Setup IPC and backup service after window creation
-  setupBackupSystem();
+  setupProductionSystem();
 
   mainWindow.on('closed', () => {
     mainWindow = null;
-    // Stop scheduler
     try {
-      if (backupService) {
-        backupService.stopScheduler();
-      }
+      if (backupService) backupService.stopScheduler();
+      if (databaseService) databaseService.close();
     } catch (e) {}
   });
 
-  // Handle online/offline events from renderer
   mainWindow.webContents.on('did-finish-load', () => {
-    // Inject online status listener
     mainWindow.webContents.executeJavaScript(`
-      window.addEventListener('online', () => {
-        console.log('[Renderer] Online event');
-        if (window.electronAPI && window.electronAPI.backup) {
-          window.electronAPI.backup.checkConnectivity();
-        }
-      });
-      window.addEventListener('offline', () => {
-        console.log('[Renderer] Offline event');
-      });
+      window.addEventListener('online', () => console.log('[Renderer] Online'));
+      window.addEventListener('offline', () => console.log('[Renderer] Offline'));
     `).catch(() => {});
   });
 }
 
-function setupBackupSystem() {
+let autoUpdaterService = null;
+
+function setupProductionSystem() {
   try {
     const ipcModulePath = path.join(__dirname, 'desktop', 'ipc.js');
     if (!fs.existsSync(ipcModulePath)) {
-      console.warn('[Electron] IPC module not found at', ipcModulePath);
+      console.warn('[Electron] IPC module not found');
       return;
     }
 
-    const { registerIpcHandlers, setMainWindow, getBackupService } = require(ipcModulePath);
+    const { registerIpcHandlers, setMainWindow, getBackupService, getDatabaseService } = require(ipcModulePath);
     
     setMainWindow(mainWindow);
     registerIpcHandlers();
     
     backupService = getBackupService();
-    
-    // Start scheduler
+    databaseService = getDatabaseService();
+
+    // Initialize database
+    try {
+      const dbResult = databaseService.initialize();
+      console.log('[Electron] Database initialized:', dbResult.mode);
+      
+      // Integrity check
+      const integrity = databaseService.checkIntegrity();
+      if (!integrity.ok) {
+        console.error('[Electron] Database integrity failed, handling corrupted DB');
+        databaseService.handleCorruptedDatabase();
+      }
+    } catch (e) {
+      console.error('[Electron] Database init failed:', e.message);
+    }
+
+    // Start backup scheduler
     try {
       backupService.startScheduler();
       console.log('[Electron] Backup scheduler started');
     } catch (e) {
-      console.warn('[Electron] Failed to start backup scheduler:', e.message);
+      console.warn('[Electron] Failed to start scheduler:', e.message);
     }
 
-    // Ensure app data directories exist
+    // Ensure app data directories
     const { getAppDataPaths } = require('./desktop/lib/constants');
     const paths = getAppDataPaths();
     const dirsToEnsure = [
@@ -222,24 +223,51 @@ function setupBackupSystem() {
       paths.secure,
       path.dirname(paths.metadataFile),
       path.join(paths.base, 'safety_backups'),
+      path.join(paths.base, 'config'),
+      path.join(paths.base, 'files'),
+      path.join(paths.base, 'logs'),
     ];
     
     for (const dir of dirsToEnsure) {
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-      }
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     }
 
-    console.log('[Electron] Backup system initialized');
-    console.log('[Electron] App data path:', paths.base);
-    console.log('[Electron] SafeStorage available:', safeStorage.isEncryptionAvailable());
+    // Initialize auto-updater
+    try {
+      const autoUpdaterPath = path.join(__dirname, 'desktop', 'lib', 'autoUpdater.js');
+      if (fs.existsSync(autoUpdaterPath)) {
+        const { initializeAutoUpdater, setMainWindow: setUpdaterWindow } = require(autoUpdaterPath);
+        autoUpdaterService = initializeAutoUpdater();
+        setUpdaterWindow(mainWindow);
+        console.log('[Electron] Auto-updater initialized');
+        
+        // Check for updates after 5 seconds if packaged
+        if (app.isPackaged) {
+          setTimeout(() => {
+            try {
+              autoUpdaterService.checkForUpdates();
+            } catch (e) {
+              console.warn('[Electron] Auto-update check failed:', e.message);
+            }
+          }, 5000);
+        }
+      }
+    } catch (e) {
+      console.warn('[Electron] Failed to initialize auto-updater:', e.message);
+    }
+
+    console.log('[Electron] Production system initialized');
+    console.log('[Electron] App data:', paths.base);
+    console.log('[Electron] SafeStorage:', safeStorage.isEncryptionAvailable());
+    console.log('[Electron] Version:', app.getVersion());
+    console.log('[Electron] Production:', app.isPackaged);
 
   } catch (e) {
-    console.error('[Electron] Failed to setup backup system:', e);
+    console.error('[Electron] Failed to setup production system:', e);
   }
 }
 
-// Ensure single instance
+// Single instance
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
   app.quit();
@@ -253,7 +281,6 @@ if (!gotTheLock) {
 
   app.whenReady().then(() => {
     createWindow();
-
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) createWindow();
     });
@@ -261,16 +288,13 @@ if (!gotTheLock) {
 }
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
+  if (process.platform !== 'darwin') app.quit();
 });
 
 app.on('before-quit', () => {
   try {
-    if (backupService) {
-      backupService.stopScheduler();
-    }
+    if (backupService) backupService.stopScheduler();
+    if (databaseService) databaseService.close();
   } catch (e) {}
 });
 
@@ -280,7 +304,9 @@ app.on('web-contents-created', (event, contents) => {
     event.preventDefault();
     shell.openExternal(navigationUrl);
   });
+  
+  // Security: prevent remote module
+  contents.on('will-attach-webview', (event) => {
+    event.preventDefault();
+  });
 });
-
-// Handle protocol for OAuth (optional)
-// app.setAsDefaultProtocolClient('schoolmanagementsystem');

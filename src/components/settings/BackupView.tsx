@@ -120,6 +120,11 @@ export const BackupView: React.FC = () => {
   const [frequency, setFrequency] = useState<'daily' | 'weekly' | 'manual'>('daily');
   const [autoBackupEnabled, setAutoBackupEnabled] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showRecoveryModal, setShowRecoveryModal] = useState(false);
+  const [recoveryKey, setRecoveryKey] = useState<string | null>(null);
+  const [showImportRecovery, setShowImportRecovery] = useState(false);
+  const [importKeyInput, setImportKeyInput] = useState('');
+  const [recoveryKeyCopied, setRecoveryKeyCopied] = useState(false);
 
   // Load settings
   const loadSettings = useCallback(async () => {
@@ -389,6 +394,53 @@ export const BackupView: React.FC = () => {
       await loadSettings();
     } catch (e: any) {
       setError(e.message);
+    }
+  };
+
+  const handleExportRecoveryKey = async () => {
+    try {
+      if (!isElectron) {
+        setError('Recovery key export only available in desktop app');
+        return;
+      }
+      const api = (window as any).electronAPI?.recovery;
+      const result = await api.exportKey();
+      if (result.success) {
+        setRecoveryKey(result.data.formatted);
+        setShowRecoveryModal(true);
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (e: any) {
+      setError(e.message);
+    }
+  };
+
+  const handleImportRecoveryKey = async () => {
+    try {
+      if (!importKeyInput.trim()) throw new Error('Please enter recovery key');
+      if (!isElectron) throw new Error('Recovery key import only available in desktop app');
+      
+      const api = (window as any).electronAPI?.recovery;
+      const result = await api.importKey(importKeyInput.trim());
+      if (result.success) {
+        setShowImportRecovery(false);
+        setImportKeyInput('');
+        await loadSettings();
+        setProgress({ stage: 'success', message: 'Recovery key imported successfully' });
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (e: any) {
+      setError(e.message);
+    }
+  };
+
+  const copyRecoveryKey = () => {
+    if (recoveryKey) {
+      navigator.clipboard.writeText(recoveryKey);
+      setRecoveryKeyCopied(true);
+      setTimeout(() => setRecoveryKeyCopied(false), 2000);
     }
   };
 
@@ -894,20 +946,161 @@ export const BackupView: React.FC = () => {
         </div>
       )}
 
+      {/* Recovery Key Section */}
+      <div className="bg-white rounded-[18px] border border-[#e5e5ea] p-6 shadow-xs">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-semibold text-[#1d1d1f] flex items-center">
+            <Key className="h-4 w-4 mr-2 text-[#0066cc]" />
+            Recovery Key (Cross-Device Restore)
+          </h3>
+          {settings?.has_encryption_key ? (
+            <span className="text-[11px] bg-[#30d158]/10 text-[#30d158] px-2 py-1 rounded-full font-medium">Key Available</span>
+          ) : (
+            <span className="text-[11px] bg-[#ff3b30]/10 text-[#ff3b30] px-2 py-1 rounded-full font-medium">No Key</span>
+          )}
+        </div>
+
+        <div className="bg-[#f5f5f7] rounded-xl p-4 border border-[#e5e5ea] mb-4">
+          <h4 className="text-xs font-semibold text-[#1d1d1f] mb-2">New PC Recovery Scenario</h4>
+          <p className="text-xs text-[#86868b] leading-relaxed mb-3">
+            If your computer is lost or you move to a new PC:<br />
+            <span className="font-mono text-[11px] bg-white px-1.5 py-0.5 rounded border">Install App → Login → Connect same Google account → Enter recovery key → Restore backup</span>
+          </p>
+          <p className="text-xs text-[#ff3b30] leading-relaxed">
+            <strong>Important:</strong> If you lose both this computer AND your recovery key, your encrypted backups will be permanently unrecoverable. 
+            The recovery key is NOT stored in Google Drive or on any server.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={handleExportRecoveryKey}
+            className="apple-btn-secondary py-2 px-4 text-xs flex items-center"
+          >
+            <Key className="h-3.5 w-3.5 mr-1.5" />
+            Show Recovery Key
+          </button>
+          <button
+            onClick={() => setShowImportRecovery(true)}
+            className="apple-btn-secondary py-2 px-4 text-xs flex items-center"
+          >
+            <Upload className="h-3.5 w-3.5 mr-1.5" />
+            Import Recovery Key (New PC)
+          </button>
+        </div>
+      </div>
+
       {/* Security info */}
       <div className="bg-white rounded-[18px] border border-[#e5e5ea] p-5">
         <h3 className="text-sm font-semibold text-[#1d1d1f] mb-3 flex items-center">
-          <Key className="h-4 w-4 mr-2 text-[#86868b]" />
+          <ShieldCheck className="h-4 w-4 mr-2 text-[#86868b]" />
           Encryption & Recovery Information
         </h3>
         <div className="bg-[#f5f5f7] rounded-xl p-4 border border-[#e5e5ea]">
           <p className="text-xs text-[#86868b] leading-relaxed">
             <strong>Encryption:</strong> All backups are encrypted with AES-256-GCM before leaving your computer. The encryption key is stored securely using your operating system's keychain (Windows DPAPI, macOS Keychain, Linux libsecret).<br /><br />
-            <strong>Recovery:</strong> If you reinstall Windows or move to a new computer, you will need to reconnect the same Google account. If the encryption key is permanently lost (e.g., OS reinstall without backup), encrypted backups may become unrecoverable. Keep your Windows user account safe.<br /><br />
-            <strong>Privacy:</strong> Your school data never leaves your control. Google Drive is only a storage destination for your encrypted backup. The school owner owns the data.
+            <strong>Recovery:</strong> Your recovery key is the encryption key encoded as XXXX-XXXX-... with checksum. It is shown only when you explicitly request it after login. 
+            If you reinstall Windows or move to a new computer, enter your recovery key after connecting the same Google account. 
+            If the recovery key is permanently lost AND this computer is lost, encrypted backups become unrecoverable. Keep your recovery key offline in a safe place.<br /><br />
+            <strong>Privacy:</strong> Your school data never leaves your control. Google Drive is only a storage destination for your encrypted backup. The school owner owns the data. Recovery keys are never sent to any server, never logged, never put inside backup.
           </p>
         </div>
       </div>
+
+      {/* Recovery Key Display Modal */}
+      {showRecoveryModal && recoveryKey && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-[20px] border border-[#e5e5ea] shadow-2xl max-w-lg w-full overflow-hidden">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="h-10 w-10 rounded-full bg-[#ff3b30]/10 flex items-center justify-center">
+                    <Key className="h-5 w-5 text-[#ff3b30]" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-semibold text-[#1d1d1f]">Your Recovery Key</h3>
+                    <p className="text-xs text-[#86868b]">Keep this safe and offline</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowRecoveryModal(false)} className="text-[#86868b] hover:text-[#1d1d1f]">
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="bg-[#ff3b30]/5 border border-[#ff3b30]/20 rounded-xl p-4 mb-4">
+                <p className="text-xs text-[#ff3b30] leading-relaxed font-medium">
+                  ⚠️ This key can decrypt all your backups. Anyone with this key can access your school data. 
+                  Do not share, email, or store online. Write it down and keep offline in a safe.
+                </p>
+              </div>
+
+              <div className="bg-[#1d1d1f] rounded-xl p-4 mb-4">
+                <p className="font-mono text-sm text-white break-all leading-relaxed tracking-wide">
+                  {recoveryKey}
+                </p>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <p className="text-[11px] text-[#86868b]">Format: XXXX-XXXX-... with checksum</p>
+                <div className="flex gap-2">
+                  <button onClick={copyRecoveryKey} className="apple-btn-secondary py-2 px-4 text-xs">
+                    {recoveryKeyCopied ? <><Check className="h-3.5 w-3.5 mr-1" />Copied</> : 'Copy Key'}
+                  </button>
+                  <button onClick={() => setShowRecoveryModal(false)} className="apple-btn-primary py-2 px-4 text-xs">
+                    I Have Saved It
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Import Recovery Key Modal */}
+      {showImportRecovery && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-[20px] border border-[#e5e5ea] shadow-2xl max-w-md w-full overflow-hidden">
+            <div className="p-6">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="h-10 w-10 rounded-full bg-[#0066cc]/10 flex items-center justify-center">
+                  <Upload className="h-5 w-5 text-[#0066cc]" />
+                </div>
+                <div>
+                  <h3 className="text-base font-semibold text-[#1d1d1f]">Import Recovery Key</h3>
+                  <p className="text-xs text-[#86868b]">For new PC restore</p>
+                </div>
+              </div>
+
+              <div className="bg-[#f5f5f7] rounded-xl p-3 mb-4 border border-[#e5e5ea]">
+                <p className="text-xs text-[#86868b] leading-relaxed">
+                  Enter your recovery key that you saved from your old computer. This will allow you to restore encrypted backups from Google Drive on this new PC.
+                </p>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-xs font-semibold text-[#86868b] mb-2">Recovery Key</label>
+                <textarea
+                  value={importKeyInput}
+                  onChange={(e) => setImportKeyInput(e.target.value)}
+                  placeholder="XXXX-XXXX-XXXX-XXXX-..."
+                  className="apple-input font-mono text-sm min-h-[80px] resize-none"
+                  rows={3}
+                />
+                <p className="text-[11px] text-[#86868b] mt-1">Format: 16 groups of 4 hex chars with optional checksum</p>
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <button onClick={() => { setShowImportRecovery(false); setImportKeyInput(''); }} className="apple-btn-secondary py-2 px-4 text-sm">
+                  Cancel
+                </button>
+                <button onClick={handleImportRecoveryKey} className="apple-btn-primary py-2 px-4 text-sm">
+                  Import Key
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

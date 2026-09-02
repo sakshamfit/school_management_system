@@ -4,6 +4,8 @@
   "version": "1.0.0",
   "main": "electron.cjs",
   "type": "module",
+  "author": "M.S. PUBLIC SCHOOL",
+  "description": "School Management System - Windows Desktop Application with Encrypted Google Drive Backup",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
     "build": "vite build",
@@ -13,12 +15,19 @@
     "desktop:win": "vite build && npx electron-builder --win",
     "desktop:mac": "vite build && npx electron-builder --mac",
     "desktop:linux": "vite build && npx electron-builder --linux",
-    "clean": "rm -rf dist",
+    "dist": "npm run build && electron-builder --win",
+    "dist:win": "npm run build && electron-builder --win",
+    "dist:all": "npm run build && electron-builder --win --mac --linux",
+    "clean": "rm -rf dist release",
     "lint": "tsc --noEmit",
     "test:backup": "node tests/backup.test.cjs",
     "test:gdrive": "node tests/googleDrive.test.cjs",
-    "test:all": "npm run test:backup && npm run test:gdrive",
-    "test": "npm run test:all"
+    "test:recovery": "node tests/recovery.test.cjs",
+    "test:security": "node tests/security.test.cjs",
+    "test:all": "npm run test:backup && npm run test:gdrive && npm run test:recovery && npm run test:security",
+    "test": "npm run test:all",
+    "audit:prod": "node scripts/prod-audit.cjs",
+    "release:check": "node scripts/release-check.cjs"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
@@ -27,6 +36,7 @@
     "@vitejs/plugin-react": "^5.0.4",
     "canvas-confetti": "^1.9.4",
     "dotenv": "^17.2.3",
+    "electron-updater": "^6.1.7",
     "express": "^4.21.2",
     "firebase": "^12.18.0",
     "lucide-react": "^0.546.0",
@@ -39,6 +49,8 @@
   "devDependencies": {
     "@types/node": "^22.14.0",
     "autoprefixer": "^10.4.21",
+    "electron": "^30.0.0",
+    "electron-builder": "^24.13.3",
     "esbuild": "^0.25.0",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.21.0",

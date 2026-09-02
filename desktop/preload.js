@@ -1,17 +1,11 @@
 /**
- * Electron Preload Script
+ * Electron Preload Script - Production Hardened
  * Secure bridge between renderer and main process
- * 
- * Security:
- * - contextIsolation: true
- * - sandbox: true
- * - Never expose tokens, keys, or secrets to renderer
- * - Only expose safe, whitelisted IPC channels
  */
 
 const { contextBridge, ipcRenderer } = require('electron');
 
-// Whitelisted channels for backup system
+// Whitelisted channels
 const BACKUP_CHANNELS = [
   'backup:get-status',
   'backup:connect-drive',
@@ -28,23 +22,71 @@ const BACKUP_CHANNELS = [
   'backup:export-local',
 ];
 
+const RECOVERY_CHANNELS = [
+  'recovery:has-key',
+  'recovery:export-key',
+  'recovery:import-key',
+  'recovery:validate-key',
+  'recovery:get-or-create',
+];
+
+const AUTH_CHANNELS = [
+  'auth:login',
+  'auth:login-teacher',
+  'auth:logout',
+  'auth:get-session',
+  'auth:refresh',
+];
+
+const LICENSE_CHANNELS = [
+  'license:check',
+  'license:get-info',
+  'license:clear',
+];
+
+const DEVICE_CHANNELS = [
+  'device:get-id',
+  'device:reset',
+];
+
+const DB_CHANNELS = [
+  'db:initialize',
+  'db:check-integrity',
+  'db:safety-backup',
+  'db:vacuum',
+];
+
+const APP_CHANNELS = [
+  'app:get-version',
+  'app:get-paths',
+  'app:check-update',
+];
+
 const SECURE_CHANNELS = [
   'secure:has-backup-key',
   'secure:get-backup-info',
 ];
 
-// General app channels (existing)
-const APP_CHANNELS = [
-  'app:get-version',
-  'app:get-paths',
-  'app:check-for-updates',
+const UPDATER_CHANNELS = [
+  'updater:check',
+  'updater:download',
+  'updater:install',
 ];
 
-const ALLOWED_CHANNELS = [...BACKUP_CHANNELS, ...SECURE_CHANNELS, ...APP_CHANNELS];
+const ALLOWED_CHANNELS = [
+  ...BACKUP_CHANNELS,
+  ...RECOVERY_CHANNELS,
+  ...AUTH_CHANNELS,
+  ...LICENSE_CHANNELS,
+  ...DEVICE_CHANNELS,
+  ...DB_CHANNELS,
+  ...APP_CHANNELS,
+  ...SECURE_CHANNELS,
+  ...UPDATER_CHANNELS,
+];
 
-// Expose safe API to renderer
+// Expose safe API
 contextBridge.exposeInMainWorld('electronAPI', {
-  // Backup operations
   backup: {
     getStatus: () => ipcRenderer.invoke('backup:get-status'),
     connectDrive: () => ipcRenderer.invoke('backup:connect-drive'),
@@ -61,19 +103,57 @@ contextBridge.exposeInMainWorld('electronAPI', {
     exportLocalBackup: (schoolData, fileName) => ipcRenderer.invoke('backup:export-local', schoolData, fileName),
   },
 
-  // App info
+  recovery: {
+    hasKey: () => ipcRenderer.invoke('recovery:has-key'),
+    exportKey: () => ipcRenderer.invoke('recovery:export-key'),
+    importKey: (formattedKey) => ipcRenderer.invoke('recovery:import-key', formattedKey),
+    validateKey: (formattedKey) => ipcRenderer.invoke('recovery:validate-key', formattedKey),
+    getOrCreate: () => ipcRenderer.invoke('recovery:get-or-create'),
+  },
+
+  auth: {
+    login: (email, password, schoolId) => ipcRenderer.invoke('auth:login', email, password, schoolId),
+    loginTeacher: (code) => ipcRenderer.invoke('auth:login-teacher', code),
+    logout: () => ipcRenderer.invoke('auth:logout'),
+    getSession: () => ipcRenderer.invoke('auth:get-session'),
+    refresh: () => ipcRenderer.invoke('auth:refresh'),
+  },
+
+  license: {
+    check: (schoolId) => ipcRenderer.invoke('license:check', schoolId),
+    getInfo: () => ipcRenderer.invoke('license:get-info'),
+    clear: () => ipcRenderer.invoke('license:clear'),
+  },
+
+  device: {
+    getId: () => ipcRenderer.invoke('device:get-id'),
+    reset: () => ipcRenderer.invoke('device:reset'),
+  },
+
+  db: {
+    initialize: () => ipcRenderer.invoke('db:initialize'),
+    checkIntegrity: () => ipcRenderer.invoke('db:check-integrity'),
+    safetyBackup: () => ipcRenderer.invoke('db:safety-backup'),
+    vacuum: () => ipcRenderer.invoke('db:vacuum'),
+  },
+
   app: {
     getVersion: () => ipcRenderer.invoke('app:get-version'),
     getPaths: () => ipcRenderer.invoke('app:get-paths'),
+    checkUpdate: () => ipcRenderer.invoke('app:check-update'),
   },
 
-  // Secure info (no secrets exposed)
   secure: {
     hasBackupKey: () => ipcRenderer.invoke('secure:has-backup-key'),
     getBackupInfo: () => ipcRenderer.invoke('secure:get-backup-info'),
   },
 
-  // Event listeners for backup progress
+  updater: {
+    check: () => ipcRenderer.invoke('updater:check'),
+    download: () => ipcRenderer.invoke('updater:download'),
+    install: () => ipcRenderer.invoke('updater:install'),
+  },
+
   onBackupProgress: (callback) => {
     const channel = 'backup:progress';
     const listener = (event, data) => callback(data);
@@ -88,12 +168,24 @@ contextBridge.exposeInMainWorld('electronAPI', {
     return () => ipcRenderer.removeListener(channel, listener);
   },
 
-  // Utility to check if running in Electron
+  onNavigateTo: (callback) => {
+    const channel = 'navigate-to';
+    const listener = (event, data) => callback(data);
+    ipcRenderer.on(channel, listener);
+    return () => ipcRenderer.removeListener(channel, listener);
+  },
+
+  onUpdaterChecking: (cb) => { const l = (e,d)=>cb(d); ipcRenderer.on('updater:checking-for-update', l); return ()=>ipcRenderer.removeListener('updater:checking-for-update', l); },
+  onUpdaterAvailable: (cb) => { const l = (e,d)=>cb(d); ipcRenderer.on('updater:update-available', l); return ()=>ipcRenderer.removeListener('updater:update-available', l); },
+  onUpdaterNotAvailable: (cb) => { const l = (e,d)=>cb(d); ipcRenderer.on('updater:update-not-available', l); return ()=>ipcRenderer.removeListener('updater:update-not-available', l); },
+  onUpdaterError: (cb) => { const l = (e,d)=>cb(d); ipcRenderer.on('updater:error', l); return ()=>ipcRenderer.removeListener('updater:error', l); },
+  onUpdaterProgress: (cb) => { const l = (e,d)=>cb(d); ipcRenderer.on('updater:download-progress', l); return ()=>ipcRenderer.removeListener('updater:download-progress', l); },
+  onUpdaterDownloaded: (cb) => { const l = (e,d)=>cb(d); ipcRenderer.on('updater:update-downloaded', l); return ()=>ipcRenderer.removeListener('updater:update-downloaded', l); },
+
   isElectron: true,
   platform: process.platform,
 });
 
-// Also expose a minimal legacy API for compatibility
 contextBridge.exposeInMainWorld('desktopAPI', {
   isDesktop: true,
   backup: {
@@ -106,4 +198,4 @@ contextBridge.exposeInMainWorld('desktopAPI', {
   }
 });
 
-console.log('[Preload] Electron backup API exposed securely');
+console.log('[Preload] Production Electron API exposed securely');
