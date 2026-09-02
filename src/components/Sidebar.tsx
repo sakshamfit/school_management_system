@@ -16,12 +16,8 @@ import {
   ShieldCheck,
   LogOut,
   ChevronRight,
-  DatabaseBackup,
-  Info,
-  KeySquare,
 } from 'lucide-react';
 import { useSchool } from '../context/SchoolContext';
-import { isDesktopApp } from '../services/desktopBridge';
 
 interface SidebarProps {
   currentTab: string;
@@ -39,7 +35,6 @@ interface NavItem {
 export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setCurrentTab }) => {
   const { currentUser, adminImpersonation, exitAdminClassAccess, logout, db } = useSchool();
   const isPrincipal = currentUser?.role === 'principal';
-  const desktop = isDesktopApp();
 
   const principalNavItems: NavItem[] = [
     { id: 'dashboard', label: 'Console Home', icon: LayoutDashboard },
@@ -55,14 +50,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setCurrentTab }) =
     { id: 'academic-year', label: 'Session Promotion', icon: Calendar },
     { id: 'activity-logs', label: 'Audit Logs', icon: History },
     { id: 'settings', label: 'School Settings', icon: Settings },
-    // Desktop edition: license, backups and application info.
-    ...(desktop
-      ? ([
-          { id: 'license', label: 'License', icon: KeySquare },
-          { id: 'backup', label: 'Backup & Restore', icon: DatabaseBackup },
-          { id: 'about', label: 'About & Updates', icon: Info },
-        ] as NavItem[])
-      : []),
   ];
 
   const teacherNavItems: NavItem[] = [

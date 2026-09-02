@@ -1,18 +1,8 @@
 node_modules/
 build/
 dist/
-release/
 coverage/
 .DS_Store
 *.log
 .env*
 !.env.example
-
-# License server runtime data (database, backups) — never commit.
-license-server/data/
-license-server/node_modules/
-
-# Packaged installers
-*.exe
-!scripts/**/*.exe
-electron-builder.sandbox.json

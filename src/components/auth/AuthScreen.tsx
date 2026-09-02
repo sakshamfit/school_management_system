@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Shield,
   KeyRound,
@@ -9,314 +9,163 @@ import {
   GraduationCap,
   Smartphone,
   Building2,
-  Headset,
-  Loader2,
-  MonitorSmartphone,
+  Info,
+  Eye,
+  EyeOff,
+  Cloud,
+  HardDrive,
+  CheckCircle2,
+  WifiOff,
 } from 'lucide-react';
 import { useSchool } from '../../context/SchoolContext';
-import { getSchoolApp } from '../../services/desktopBridge';
+
+// Check if running in Electron
+const isElectron = typeof window !== 'undefined' && (window as any).electronAPI?.isElectron;
 
 export const AuthScreen: React.FC = () => {
-  const { db, loginPrincipal, loginTeacher, isDesktop, desktopInitializing } = useSchool();
+  const { db, loginPrincipal, loginTeacher } = useSchool();
 
-  const [authMode, setAuthMode] = useState<'selection' | 'principal_login' | 'teacher_login'>(
-    isDesktop ? 'principal_login' : 'selection'
-  );
-
-  const [principalEmail, setPrincipalEmail] = useState('');
+  const [authMode, setAuthMode] = useState<'selection' | 'principal_login' | 'teacher_login'>('selection');
+  const [principalEmail, setPrincipalEmail] = useState('mozammilalam1996@gmail.com');
   const [principalPassword, setPrincipalPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [licenseStatus, setLicenseStatus] = useState<any>(null);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   const [teacherCode, setTeacherCode] = useState('');
   const [teacherError, setTeacherError] = useState<string | null>(null);
-  const [teacherSubmitting, setTeacherSubmitting] = useState(false);
-
-  const [appVersion, setAppVersion] = useState<string>('');
-  const [support, setSupport] = useState<{ url?: string; email?: string; phone?: string } | null>(null);
 
   useEffect(() => {
-    if (!isDesktop) return;
-    const app = getSchoolApp();
-    if (!app) return;
-    app.system.info().then(info => {
-      if (info && info.appVersion) setAppVersion(info.appVersion);
-    });
-    app.auth.getSupport().then(res => {
-      if (res && res.support) setSupport(res.support);
-    });
-  }, [isDesktop]);
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // Load license info if in Electron
+    if (isElectron && (window as any).electronAPI?.license?.getInfo) {
+      (window as any).electronAPI.license.getInfo().then((result: any) => {
+        if (result.success && result.data) {
+          setLicenseStatus(result.data);
+        }
+      }).catch(() => {});
+    }
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   const handlePrincipalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSubmitting) return;
     setLoginError(null);
-    setIsSubmitting(true);
+    setIsLoggingIn(true);
+
     try {
-      const res = await loginPrincipal(principalEmail, principalPassword);
-      if (!res.success) {
-        setLoginError(res.error || 'Invalid email or password');
+      // If in Electron, use secure auth manager
+      if (isElectron && (window as any).electronAPI?.auth?.login) {
+        const result = await (window as any).electronAPI.auth.login(principalEmail, principalPassword, db.schoolInfo.id);
+        if (!result.success) {
+          if (result.isOffline) {
+            setIsOnline(false);
+            throw new Error('Internet unavailable. Checking offline session...');
+          }
+          throw new Error(result.error);
+        }
+        // Auth succeeded in main process, now also login in renderer context
+        // For compatibility, we still call the context login
+        const ctxResult = loginPrincipal(principalEmail, principalPassword);
+        if (!ctxResult.success) {
+          throw new Error(ctxResult.error || 'Login failed');
+        }
+      } else {
+        // Web mode
+        const res = loginPrincipal(principalEmail, principalPassword);
+        if (!res.success) {
+          throw new Error(res.error || 'Invalid email or password');
+        }
       }
+    } catch (err: any) {
+      setLoginError(err.message);
     } finally {
-      setIsSubmitting(false);
+      setIsLoggingIn(false);
     }
   };
 
   const handleTeacherSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (teacherSubmitting) return;
     setTeacherError(null);
-    setTeacherSubmitting(true);
+
     try {
-      const res = await loginTeacher(teacherCode);
-      if (!res.success) {
-        setTeacherError(res.error || 'Invalid 6-Digit Teacher Code');
+      if (isElectron && (window as any).electronAPI?.auth?.loginTeacher) {
+        const result = await (window as any).electronAPI.auth.loginTeacher(teacherCode);
+        if (!result.success) throw new Error(result.error);
       }
-    } finally {
-      setTeacherSubmitting(false);
+      const res = loginTeacher(teacherCode);
+      if (!res.success) throw new Error(res.error || 'Invalid 6-Digit Teacher Code');
+    } catch (err: any) {
+      setTeacherError(err.message);
     }
   };
 
-  const contactAdministrator = () => {
-    if (isDesktop) {
-      const app = getSchoolApp();
-      const target = support?.email ? `mailto:${support.email}` : support?.url;
-      if (app && target) {
-        app.system.openExternal(target);
-        return;
-      }
-    }
-    const phone = db.schoolInfo.phone;
-    if (phone) window.open(`https://wa.me/${phone.replace(/[^\d]/g, '')}`, '_blank');
-  };
-
-  // ------------------------------------------------------------------
-  // Desktop edition sign-in (no signup — accounts are provisioned by the
-  // software administrator and verified online with an offline grace period)
-  // ------------------------------------------------------------------
-  if (isDesktop) {
-    if (desktopInitializing) {
-      return (
-        <div className="min-h-screen flex flex-col justify-center items-center bg-[#f5f5f7] text-[#1d1d1f] gap-4">
-          <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-[#0066cc] text-white shadow-md">
-            <GraduationCap className="h-8 w-8 text-white" />
-          </div>
-          <div className="flex items-center space-x-2 text-sm text-[#86868b]">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <span>Preparing your secure session…</span>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="min-h-screen flex flex-col justify-center items-center p-4 relative overflow-hidden bg-[#f5f5f7] text-[#1d1d1f]">
-        <div className="w-full max-w-md relative z-10">
-          <div className="text-center mb-8">
-            <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-[#0066cc] text-white mb-4 shadow-md">
-              <GraduationCap className="h-8 w-8 text-white" />
-            </div>
-            <h1 className="text-2xl font-semibold tracking-[-0.022em]">School Management System</h1>
-            <p className="text-xs text-[#86868b] mt-1">Windows Desktop Edition</p>
-            {authMode === 'teacher_login' && (
-              <div className="mt-3 inline-flex items-center space-x-2 bg-white px-3.5 py-1 rounded-full text-xs font-semibold text-[#0066cc] border border-[#e5e5ea] shadow-xs">
-                <span>{db.schoolInfo.name}</span>
-              </div>
-            )}
-          </div>
-
-          {authMode === 'principal_login' && (
-            <div className="bg-white rounded-[20px] border border-[#e5e5ea] p-6 sm:p-7 shadow-xl animate-in fade-in duration-200">
-              <div className="flex items-center space-x-3 pb-4 border-b border-[#f0f0f0] mb-5">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0066cc]/10 text-[#0066cc]">
-                  <Shield className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-sm">Sign in to your school</h3>
-                  <p className="text-xs text-[#86868b]">
-                    Use the credentials provided by your software administrator
-                  </p>
-                </div>
-              </div>
-
-              {loginError && (
-                <div className="mb-4 flex items-start space-x-2 bg-[#ff3b30]/10 p-3 rounded-xl text-xs font-semibold text-[#ff3b30]">
-                  <AlertCircle className="h-4 w-4 shrink-0 text-[#ff3b30] mt-0.5" />
-                  <span>{loginError}</span>
-                </div>
-              )}
-
-              <form onSubmit={handlePrincipalSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-[#86868b] mb-1">School ID / Email</label>
-                  <div className="relative">
-                    <Mail className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#86868b]" />
-                    <input
-                      type="text"
-                      required
-                      autoFocus
-                      value={principalEmail}
-                      onChange={e => setPrincipalEmail(e.target.value)}
-                      placeholder="e.g. DPS-2026-001 or admin@school.com"
-                      className="apple-input pl-10"
-                      autoComplete="username"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-[#86868b] mb-1">Password</label>
-                  <div className="relative">
-                    <Lock className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#86868b]" />
-                    <input
-                      type="password"
-                      required
-                      value={principalPassword}
-                      onChange={e => setPrincipalPassword(e.target.value)}
-                      placeholder="Enter password"
-                      className="apple-input pl-10"
-                      autoComplete="current-password"
-                    />
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full apple-btn-primary py-3 mt-2 flex items-center justify-center space-x-2 disabled:opacity-60"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>Verifying…</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>LOGIN</span>
-                      <ArrowRight className="h-4 w-4 shrink-0" />
-                    </>
-                  )}
-                </button>
-              </form>
-
-              <div className="mt-5 pt-4 border-t border-[#f0f0f0] flex items-center justify-between">
-                <button
-                  onClick={contactAdministrator}
-                  className="text-xs font-semibold text-[#0066cc] hover:underline flex items-center space-x-1.5"
-                >
-                  <Headset className="h-3.5 w-3.5" />
-                  <span>Contact Administrator</span>
-                </button>
-                <button
-                  onClick={() => setAuthMode('teacher_login')}
-                  className="text-xs font-semibold text-[#86868b] hover:text-[#0066cc] flex items-center space-x-1.5"
-                >
-                  <KeyRound className="h-3.5 w-3.5" />
-                  <span>Teacher sign-in</span>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {authMode === 'teacher_login' && (
-            <div className="bg-white rounded-[20px] border border-[#e5e5ea] p-6 sm:p-7 shadow-xl animate-in fade-in duration-200">
-              <div className="flex items-center justify-between pb-4 border-b border-[#f0f0f0] mb-5">
-                <div className="flex items-center space-x-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#af52de]/10 text-[#af52de]">
-                    <KeyRound className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-sm">Teacher Login</h3>
-                    <p className="text-xs text-[#86868b]">Access Code</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setAuthMode('principal_login')}
-                  className="text-xs font-semibold text-[#0066cc] hover:underline"
-                >
-                  School sign-in
-                </button>
-              </div>
-
-              {teacherError && (
-                <div className="mb-4 flex items-start space-x-2 bg-[#ff3b30]/10 p-3 rounded-xl text-xs font-semibold text-[#ff3b30]">
-                  <AlertCircle className="h-4 w-4 shrink-0 text-[#ff3b30] mt-0.5" />
-                  <span>{teacherError}</span>
-                </div>
-              )}
-
-              <form onSubmit={handleTeacherSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-[#86868b] mb-1 text-center">
-                    Teacher Code
-                  </label>
-                  <div className="relative">
-                    <KeyRound className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#0066cc]" />
-                    <input
-                      type="text"
-                      required
-                      autoFocus
-                      maxLength={10}
-                      value={teacherCode}
-                      onChange={e => setTeacherCode(e.target.value.toUpperCase())}
-                      placeholder="e.g. 501001"
-                      className="apple-input pl-10 pr-10 font-mono text-center text-lg font-bold tracking-widest"
-                    />
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={teacherSubmitting}
-                  className="w-full apple-btn-primary py-3 mt-2 flex items-center justify-center space-x-2 disabled:opacity-60"
-                >
-                  {teacherSubmitting ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <>
-                      <span>Enter Teacher Portal</span>
-                      <ArrowRight className="h-4 w-4 shrink-0" />
-                    </>
-                  )}
-                </button>
-              </form>
-            </div>
-          )}
-
-          <div className="flex items-center justify-center space-x-2 text-center pt-4 text-xs text-[#86868b]">
-            <MonitorSmartphone className="h-3.5 w-3.5 text-[#30d158] shrink-0" />
-            <span>Your school data is stored securely on this computer</span>
-          </div>
-
-          {appVersion && (
-            <div className="text-center pt-2 text-[10px] text-[#c7c7cc]">Version {appVersion}</div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  // ------------------------------------------------------------------
-  // Web edition (existing behavior, preserved)
-  // ------------------------------------------------------------------
   return (
     <div className="min-h-screen flex flex-col justify-center items-center p-4 relative overflow-hidden bg-[#f5f5f7] text-[#1d1d1f]">
+      {/* Background decoration */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#0066cc]/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-[#30d158]/5 rounded-full blur-3xl" />
+      </div>
+
       <div className="w-full max-w-md relative z-10">
+        {/* School Logo & Title */}
         <div className="text-center mb-8">
           <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-[#0066cc] text-white mb-4 shadow-md">
             <GraduationCap className="h-8 w-8 text-white" />
           </div>
           <h1 className="text-2xl font-semibold tracking-[-0.022em] text-[#1d1d1f]">
-            {db.schoolInfo.name || 'School Management System'}
+            {db.schoolInfo.name || 'M.S. PUBLIC SCHOOL'}
           </h1>
-          <p className="text-xs text-[#86868b] mt-1">School Management & Performance System</p>
+          <p className="text-xs text-[#86868b] mt-1">
+            School Management & Performance System
+          </p>
           <div className="mt-3 inline-flex items-center space-x-2 bg-white px-3.5 py-1 rounded-full text-xs font-semibold text-[#0066cc] border border-[#e5e5ea] shadow-xs">
             <span>Session: {db.schoolInfo.currentAcademicYear}</span>
           </div>
+
+          {/* License status badge */}
+          {licenseStatus && (
+            <div className="mt-3 flex justify-center">
+              {licenseStatus.status === 'active' ? (
+                <span className="inline-flex items-center gap-1 bg-[#30d158]/10 text-[#30d158] px-2.5 py-1 rounded-full text-[11px] font-semibold">
+                  <CheckCircle2 className="h-3 w-3" />
+                  Licensed • Expires {licenseStatus.expiresAt ? new Date(licenseStatus.expiresAt).toLocaleDateString() : '—'}
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 bg-[#ff3b30]/10 text-[#ff3b30] px-2.5 py-1 rounded-full text-[11px] font-semibold">
+                  <AlertCircle className="h-3 w-3" />
+                  {licenseStatus.status.toUpperCase()} • Contact Admin
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Offline badge */}
+          {!isOnline && (
+            <div className="mt-2 flex justify-center">
+              <span className="inline-flex items-center gap-1 bg-[#ff9f0a]/10 text-[#ff9f0a] px-2.5 py-1 rounded-full text-[11px] font-semibold">
+                <WifiOff className="h-3 w-3" />
+                Offline Mode • 7-day grace period
+              </span>
+            </div>
+          )}
         </div>
 
+        {/* View 1: Main Selection (Two Cards) - No Signup */}
         {authMode === 'selection' && (
           <div className="space-y-4 animate-in fade-in duration-200">
+            {/* Principal Login Card */}
             <div
               onClick={() => setAuthMode('principal_login')}
               className="group cursor-pointer bg-white rounded-[20px] border border-[#e5e5ea] p-5 hover:border-[#0066cc]/40 transition-all duration-200 shadow-xs"
@@ -331,7 +180,7 @@ export const AuthScreen: React.FC = () => {
                       Principal Console
                     </h2>
                     <p className="text-xs text-[#86868b] mt-0.5">
-                      Full administration, faculty, students, fees & audit
+                      Administrator-issued credentials required
                     </p>
                   </div>
                 </div>
@@ -341,6 +190,7 @@ export const AuthScreen: React.FC = () => {
               </div>
             </div>
 
+            {/* Teacher Login Card */}
             <div
               onClick={() => setAuthMode('teacher_login')}
               className="group cursor-pointer bg-white rounded-[20px] border border-[#e5e5ea] p-5 hover:border-[#0066cc]/40 transition-all duration-200 shadow-xs"
@@ -354,7 +204,9 @@ export const AuthScreen: React.FC = () => {
                     <h2 className="text-base font-semibold text-[#1d1d1f] group-hover:text-[#0066cc] transition-colors">
                       Teacher Portal
                     </h2>
-                    <p className="text-xs text-[#86868b] mt-0.5">Teacher Code • Multi-Device Access</p>
+                    <p className="text-xs text-[#86868b] mt-0.5">
+                      6-Digit Teacher Code • Multi-Device Access
+                    </p>
                   </div>
                 </div>
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f5f5f7] text-[#86868b] group-hover:bg-[#0066cc] group-hover:text-white transition-colors">
@@ -363,13 +215,28 @@ export const AuthScreen: React.FC = () => {
               </div>
             </div>
 
+            {/* Security & No Signup Notice */}
+            <div className="bg-white rounded-[16px] border border-[#e5e5ea] p-4">
+              <div className="flex items-start space-x-2">
+                <Shield className="h-4 w-4 text-[#0066cc] mt-0.5 shrink-0" />
+                <div>
+                  <h4 className="text-xs font-semibold text-[#1d1d1f]">Administrator-Issued Access Only</h4>
+                  <p className="text-[11px] text-[#86868b] mt-1 leading-relaxed">
+                    There is no public signup. Your School ID, email, and password are issued by the administrator. 
+                    If you forgot your credentials, please contact your school administrator.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <div className="flex items-center justify-center space-x-2 text-center pt-2 text-xs text-[#86868b]">
               <Smartphone className="h-3.5 w-3.5 text-[#30d158] shrink-0" />
-              <span>Multi-device synchronization enabled</span>
+              <span>Secure • Local-first • Encrypted backup</span>
             </div>
           </div>
         )}
 
+        {/* View 2: Principal Login - No Signup, Only Login */}
         {authMode === 'principal_login' && (
           <div className="bg-white rounded-[20px] border border-[#e5e5ea] p-6 sm:p-7 shadow-xl animate-in fade-in duration-200">
             <div className="flex items-center justify-between pb-4 border-b border-[#f0f0f0] mb-5">
@@ -379,7 +246,7 @@ export const AuthScreen: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold text-sm text-[#1d1d1f]">Principal Login</h3>
-                  <p className="text-xs text-[#86868b]">Email & Master Password</p>
+                  <p className="text-xs text-[#86868b]">School ID / Email & Password</p>
                 </div>
               </div>
               <button
@@ -391,7 +258,7 @@ export const AuthScreen: React.FC = () => {
             </div>
 
             {loginError && (
-              <div className="mb-4 flex items-start space-x-2 bg-[#ff3b30]/10 p-3 rounded-xl text-xs font-semibold text-[#ff3b30]">
+              <div className="mb-4 flex items-start space-x-2 bg-[#ff3b30]/10 p-3 rounded-xl text-xs font-medium text-[#ff3b30] border border-[#ff3b30]/20">
                 <AlertCircle className="h-4 w-4 shrink-0 text-[#ff3b30] mt-0.5" />
                 <span>{loginError}</span>
               </div>
@@ -399,7 +266,9 @@ export const AuthScreen: React.FC = () => {
 
             <form onSubmit={handlePrincipalSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-[#86868b] mb-1">Principal Email Address</label>
+                <label className="block text-xs font-semibold text-[#86868b] mb-1">
+                  School ID / Email Address
+                </label>
                 <div className="relative">
                   <Mail className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#86868b]" />
                   <input
@@ -407,34 +276,50 @@ export const AuthScreen: React.FC = () => {
                     required
                     value={principalEmail}
                     onChange={e => setPrincipalEmail(e.target.value)}
-                    placeholder="principal@school.edu.in"
+                    placeholder="schoolname@gmail.com"
                     className="apple-input pl-10"
+                    autoComplete="email"
                   />
                 </div>
+                <p className="text-[11px] text-[#86868b] mt-1">Issued by administrator</p>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#86868b] mb-1">Password</label>
+                <label className="block text-xs font-semibold text-[#86868b] mb-1">
+                  Password
+                </label>
                 <div className="relative">
                   <Lock className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#86868b]" />
                   <input
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     required
+                    autoFocus
                     value={principalPassword}
                     onChange={e => setPrincipalPassword(e.target.value)}
                     placeholder="Enter password"
-                    className="apple-input pl-10"
+                    className="apple-input pl-10 pr-10"
+                    autoComplete="current-password"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#86868b] hover:text-[#1d1d1f]"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
               </div>
 
               <button
                 type="submit"
-                disabled={isSubmitting}
-                className="w-full apple-btn-primary py-3 mt-2 flex items-center justify-center space-x-2 disabled:opacity-60"
+                disabled={isLoggingIn}
+                className="w-full apple-btn-primary py-3 mt-2 flex items-center justify-center space-x-2 disabled:opacity-50"
               >
-                {isSubmitting ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                {isLoggingIn ? (
+                  <>
+                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Verifying...</span>
+                  </>
                 ) : (
                   <>
                     <span>Access Principal Console</span>
@@ -442,10 +327,28 @@ export const AuthScreen: React.FC = () => {
                   </>
                 )}
               </button>
+
+              <div className="pt-3 border-t border-[#f0f0f0] text-center">
+                <p className="text-[11px] text-[#86868b]">
+                  Forgot password? <span className="font-semibold text-[#1d1d1f]">Contact Administrator</span>
+                </p>
+                <p className="text-[10px] text-[#86868b] mt-1">
+                  No public signup • Credentials issued by admin only
+                </p>
+              </div>
             </form>
+
+            {/* Local-first info */}
+            <div className="mt-4 bg-[#f5f5f7] rounded-xl p-3 border border-[#e5e5ea] flex items-start space-x-2">
+              <HardDrive className="h-4 w-4 text-[#0066cc] mt-0.5 shrink-0" />
+              <p className="text-[11px] text-[#86868b] leading-relaxed">
+                Your school data is stored locally on this computer. Google Drive is used only as encrypted backup. Works offline.
+              </p>
+            </div>
           </div>
         )}
 
+        {/* View 3: Teacher Login with 6-Digit Code */}
         {authMode === 'teacher_login' && (
           <div className="bg-white rounded-[20px] border border-[#e5e5ea] p-6 sm:p-7 shadow-xl animate-in fade-in duration-200">
             <div className="flex items-center justify-between pb-4 border-b border-[#f0f0f0] mb-5">
@@ -455,7 +358,7 @@ export const AuthScreen: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold text-sm text-[#1d1d1f]">Teacher Login</h3>
-                  <p className="text-xs text-[#86868b]">Access Code</p>
+                  <p className="text-xs text-[#86868b]">6-Digit Access Code</p>
                 </div>
               </div>
               <button
@@ -467,15 +370,17 @@ export const AuthScreen: React.FC = () => {
             </div>
 
             {teacherError && (
-              <div className="mb-4 flex items-start space-x-2 bg-[#ff3b30]/10 p-3 rounded-xl text-xs font-semibold text-[#ff3b30]">
-                <AlertCircle className="h-4 w-4 shrink-0 text-[#ff3b30] mt-0.5" />
+              <div className="mb-4 flex items-center space-x-2 bg-[#ff3b30]/10 p-3 rounded-xl text-xs font-semibold text-[#ff3b30]">
+                <AlertCircle className="h-4 w-4 shrink-0 text-[#ff3b30]" />
                 <span>{teacherError}</span>
               </div>
             )}
 
             <form onSubmit={handleTeacherSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-[#86868b] mb-1 text-center">Teacher Code</label>
+                <label className="block text-xs font-semibold text-[#86868b] mb-1 text-center">
+                  6-Digit Teacher Code
+                </label>
                 <div className="relative">
                   <KeyRound className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#0066cc]" />
                   <input
@@ -489,25 +394,39 @@ export const AuthScreen: React.FC = () => {
                     className="apple-input pl-10 pr-10 font-mono text-center text-lg font-bold tracking-widest"
                   />
                 </div>
+                <div className="mt-3 flex items-center justify-center space-x-1.5 text-xs text-[#86868b] bg-[#f5f5f7] py-2 px-3 rounded-xl text-center">
+                  <Smartphone className="h-3.5 w-3.5 text-[#30d158] shrink-0" />
+                  <span>Issued by principal • Works on multiple devices</span>
+                </div>
               </div>
 
               <button
                 type="submit"
-                disabled={teacherSubmitting}
-                className="w-full apple-btn-primary py-3 mt-2 flex items-center justify-center space-x-2 disabled:opacity-60"
+                className="w-full apple-btn-primary py-3 mt-2 flex items-center justify-center space-x-2"
               >
-                {teacherSubmitting ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <>
-                    <span>Enter Teacher Portal</span>
-                    <ArrowRight className="h-4 w-4 shrink-0" />
-                  </>
-                )}
+                <span>Enter Teacher Portal</span>
+                <ArrowRight className="h-4 w-4 shrink-0" />
               </button>
+
+              <div className="pt-3 border-t border-[#f0f0f0] text-center">
+                <p className="text-[11px] text-[#86868b]">
+                  Forgot code? <span className="font-semibold text-[#1d1d1f]">Contact Principal</span>
+                </p>
+              </div>
             </form>
           </div>
         )}
+
+        {/* Footer - Production info */}
+        <div className="mt-6 text-center">
+          <p className="text-[10px] text-[#86868b]">
+            M.S. PUBLIC SCHOOL • Version 1.0.0 • Secure Desktop Application
+          </p>
+          <p className="text-[10px] text-[#86868b] mt-1 flex items-center justify-center gap-1">
+            <Cloud className="h-3 w-3" />
+            Encrypted backup to your own Google Drive
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -282,10 +282,32 @@ export const ClientHandoverModal: React.FC<ClientHandoverModalProps> = ({
                   </span>
                 </div>
 
-                <div className="bg-[#f5f5f7] p-3 rounded-xl border border-[#e5e5ea] text-xs text-[#86868b] leading-relaxed">
-                  Administrator credentials are issued securely by your software provider and are never stored inside
-                  the application. If you need your school's sign-in details — or need to reset them — contact your
-                  software administrator. Teacher access codes below are managed by the school principal.
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  <div className="bg-[#f5f5f7] p-3 rounded-xl flex items-center justify-between border border-[#e5e5ea]">
+                    <div>
+                      <span className="text-[10px] text-[#86868b] block font-semibold">LOGIN EMAIL</span>
+                      <span className="font-mono text-[#1d1d1f] font-semibold">mozammilalam1996@gmail.com</span>
+                    </div>
+                    <button
+                      onClick={() => copyText('mozammilalam1996@gmail.com', 'p_email')}
+                      className="text-[#0066cc] hover:underline text-[11px] font-semibold ml-2"
+                    >
+                      {copiedField === 'p_email' ? <Check className="h-3.5 w-3.5 text-[#30d158]" /> : <Copy className="h-3.5 w-3.5" />}
+                    </button>
+                  </div>
+
+                  <div className="bg-[#f5f5f7] p-3 rounded-xl flex items-center justify-between border border-[#e5e5ea]">
+                    <div>
+                      <span className="text-[10px] text-[#86868b] block font-semibold">LOGIN PASSWORD</span>
+                      <span className="font-mono text-[#1d1d1f] font-semibold">9931066436@</span>
+                    </div>
+                    <button
+                      onClick={() => copyText('9931066436@', 'p_pass')}
+                      className="text-[#0066cc] hover:underline text-[11px] font-semibold ml-2"
+                    >
+                      {copiedField === 'p_pass' ? <Check className="h-3.5 w-3.5 text-[#30d158]" /> : <Copy className="h-3.5 w-3.5" />}
+                    </button>
+                  </div>
                 </div>
               </div>
 
