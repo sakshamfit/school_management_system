@@ -1,0 +1,65 @@
+# NOTE: This file ships at ci/release.yml because the automation token cannot
+# create workflow files. Copy it once to .github/workflows/release.yml
+# (git add .github/workflows/release.yml && git commit) and CI owns it from then on.
+name: Release Windows Installer
+
+# Push a version tag to build, package and publish the Windows installer.
+#
+#   git tag v1.0.0 && git push origin v1.0.0
+#
+# The job produces SchoolManagementSetup-<version>.exe and attaches it (plus
+# latest.yml for auto-update) to a GitHub Release. The website download button
+# should link to:  .../releases/latest/download/SchoolManagementSetup-<version>.exe
+# (or the "latest" release asset URL) so it never changes per version.
+#
+# Required repository secrets:
+#   LICENSE_SERVER_URL      HTTPS URL of the deployed license server
+#   (optional) WIN_CSC_LINK + WIN_CSC_KEY_PASSWORD — Windows code-signing
+#   certificate (.pfx). Without them the build is UNSIGNED and Windows
+#   SmartScreen will warn users; see RELEASE.md.
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Configure production license server
+        run: node scripts/configure-release.js --license-server-url "${{ secrets.LICENSE_SERVER_URL }}"
+
+      - name: Build renderer
+        run: npm run build
+
+      - name: Typecheck
+        run: npm run lint
+
+      - name: Package Windows installer (NSIS)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+        run: npx electron-builder --win --publish always
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SchoolManagementSetup
+          path: release/*.exe

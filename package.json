@@ -1,28 +1,46 @@
 {
-  "name": "ms-public-school-portal",
+  "name": "school-management-system",
   "private": true,
   "version": "1.0.0",
-  "main": "electron.cjs",
+  "description": "School Management System — Windows Desktop Edition. Professional school administration software: students, faculty, attendance, fees, exams, reports, licensing and backups.",
+  "main": "desktop/main.js",
   "type": "module",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
     "build": "vite build",
     "preview": "vite preview --port=3000 --host=0.0.0.0",
     "desktop": "electron .",
+    "desktop:dev": "node scripts/dev-desktop.mjs",
     "desktop:build": "vite build && npx electron-builder",
     "desktop:win": "vite build && npx electron-builder --win",
     "desktop:mac": "vite build && npx electron-builder --mac",
     "desktop:linux": "vite build && npx electron-builder --linux",
-    "clean": "rm -rf dist",
-    "lint": "tsc --noEmit"
+    "dist": "vite build && npx electron-builder --win",
+    "release:configure": "node scripts/configure-release.js",
+    "license-server": "node license-server/src/index.js",
+    "clean": "rm -rf dist release",
+    "lint": "tsc --noEmit",
+    "test": "npm run test:server && npm run test:desktop",
+    "test:server": "cd license-server && npm test",
+    "test:desktop": "node desktop/test/desktop.test.js"
   },
   "dependencies": {
+    "better-sqlite3": "^13.0.3",
+    "electron-updater": "^6.8.9"
+  },
+  "devDependencies": {
     "@google/genai": "^2.4.0",
     "@tailwindcss/vite": "^4.1.14",
     "@types/canvas-confetti": "^1.9.0",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.4",
+    "autoprefixer": "^10.4.21",
     "canvas-confetti": "^1.9.4",
     "dotenv": "^17.2.3",
+    "electron": "^44.1.1",
+    "electron-builder": "^26.15.3",
+    "esbuild": "^0.25.0",
     "express": "^4.21.2",
     "firebase": "^12.18.0",
     "lucide-react": "^0.546.0",
@@ -30,16 +48,56 @@
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
     "recharts": "^3.10.1",
-    "vite": "^6.2.3"
-  },
-  "devDependencies": {
-    "@types/node": "^22.14.0",
-    "autoprefixer": "^10.4.21",
-    "esbuild": "^0.25.0",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",
-    "vite": "^6.2.3",
-    "@types/express": "^4.17.21"
+    "vite": "^6.2.3"
+  },
+  "build": {
+    "appId": "com.schoolmanagement.desktop",
+    "productName": "School Management System",
+    "artifactName": "SchoolManagementSetup-${version}.${ext}",
+    "directories": {
+      "output": "release",
+      "buildResources": "resources"
+    },
+    "files": [
+      "dist/**",
+      "desktop/**",
+      "resources/icon.png",
+      "resources/icon.ico",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "node_modules/better-sqlite3/**"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "resources/icon.ico",
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "School Management System",
+      "uninstallDisplayName": "School Management System",
+      "deleteAppDataOnUninstall": false,
+      "differentialPackage": false
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "sakshamfit",
+      "repo": "school_management_system"
+    }
   }
 }

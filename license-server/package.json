@@ -1,0 +1,19 @@
+{
+  "name": "sms-license-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Central authentication, licensing and device-activation service for School Management System desktop editions. Also hosts the administrator control panel.",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "test": "node test/integration.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "better-sqlite3": "^13.0.3",
+    "express": "^4.21.2"
+  }
+}
