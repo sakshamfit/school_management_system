@@ -14,7 +14,11 @@
     "desktop:mac": "vite build && npx electron-builder --mac",
     "desktop:linux": "vite build && npx electron-builder --linux",
     "clean": "rm -rf dist",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "test:backup": "node tests/backup.test.cjs",
+    "test:gdrive": "node tests/googleDrive.test.cjs",
+    "test:all": "npm run test:backup && npm run test:gdrive",
+    "test": "npm run test:all"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
