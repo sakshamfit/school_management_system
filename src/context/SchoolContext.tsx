@@ -19,6 +19,7 @@ import {
 } from '../types';
 import { INITIAL_SCHOOL_DATABASE } from '../data/initialData';
 import { generateTeacherCode, generateReceiptNumber, getTodayDateString } from '../utils/helpers';
+import { isDesktopApp, getSchoolApp, DesktopSessionInfo } from '../services/desktopBridge';
 import {
   seedInitialDatabaseIfNeeded,
   subscribeToSchoolDatabase,
@@ -41,7 +42,7 @@ import {
   saveAcademicYearToFirestore,
   saveActivityLogToFirestore,
   saveNotificationToFirestore,
-} from '../services/firestoreSync';
+} from '../services/dataService';
 
 const STORAGE_KEY = 'msps_school_database_v2';
 const AUTH_KEY = 'msps_auth_user_v2';
@@ -63,9 +64,15 @@ interface SchoolContextType {
   isCloudSyncing: boolean;
   lastCloudSyncTime: string | null;
   cloudError: string | null;
-  
+
+  // Desktop edition (Electron) state
+  isDesktop: boolean;
+  desktopSession: DesktopSessionInfo | null;
+  desktopInitializing: boolean;
+  refreshDesktopSession: () => Promise<void>;
+
   // Auth
-  loginPrincipal: (email: string, password: string) => { success: boolean; error?: string };
+  loginPrincipal: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   setupSchoolAndPrincipal: (data: {
     principalName: string;
     schoolName: string;
@@ -73,7 +80,7 @@ interface SchoolContextType {
     password: string;
     phone?: string;
   }) => { success: boolean; error?: string };
-  loginTeacher: (code: string) => { success: boolean; error?: string };
+  loginTeacher: (code: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   
   // Impersonation
@@ -151,41 +158,17 @@ interface SchoolContextType {
 const SchoolContext = createContext<SchoolContextType | undefined>(undefined);
 
 export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const desktop = isDesktopApp();
+
   const [db, setDb] = useState<SchoolDatabase>(() => {
-    if (typeof window !== 'undefined') {
+    // Desktop edition: SQLite (owned by the Electron main process) is the
+    // source of truth — the initial in-memory copy is replaced on load.
+    if (!desktop && typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
           const parsed = JSON.parse(saved);
           if (parsed && parsed.schoolInfo) {
-            // Ensure permanent principal is synced
-            const users = (parsed.users || []).filter(
-              (u: User) => !u.id.startsWith('usr_teach_') || u.teacherCode
-            );
-            const hasPrincipal = users.some(
-              (u: User) => u.role === 'principal' && u.email === 'mozammilalam1996@gmail.com'
-            );
-            if (!hasPrincipal) {
-              users.unshift({
-                id: 'usr_principal_01',
-                name: 'Mozammil Alam',
-                email: 'mozammilalam1996@gmail.com',
-                role: 'principal',
-                password: '9931066436@',
-                phone: '+91 99310 66436',
-                status: 'active',
-                joiningDate: '2026-01-01',
-                createdAt: '2026-01-01T00:00:00.000Z',
-              });
-            } else {
-              // Ensure password matches
-              const p = users.find((u: User) => u.role === 'principal' && u.email === 'mozammilalam1996@gmail.com');
-              if (p) {
-                p.password = '9931066436@';
-                p.name = 'Mozammil Alam';
-              }
-            }
-            parsed.users = users;
             return parsed;
           }
         }
@@ -197,7 +180,9 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   });
 
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
-    if (typeof window !== 'undefined') {
+    // Desktop sessions are restored by the main process (secure storage),
+    // never from renderer-accessible localStorage.
+    if (!desktop && typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem(AUTH_KEY);
         if (saved) {
@@ -215,28 +200,122 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [isCloudSyncing, setIsCloudSyncing] = useState<boolean>(false);
   const [lastCloudSyncTime, setLastCloudSyncTime] = useState<string | null>(null);
   const [cloudError, setCloudError] = useState<string | null>(null);
+  const [desktopSession, setDesktopSession] = useState<DesktopSessionInfo | null>(null);
+  const [desktopInitializing, setDesktopInitializing] = useState<boolean>(desktop);
 
-  // Sync database to local storage as instant local cache
+  // Sync database to local storage as instant local cache (web edition only —
+  // the desktop edition persists to SQLite in the main process).
   useEffect(() => {
+    if (desktop) return;
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
     } catch (e) {
       console.error('Error saving db to local storage', e);
     }
-  }, [db]);
+  }, [db, desktop]);
 
-  // Sync auth state
+  // Sync auth state (web edition only)
   useEffect(() => {
+    if (desktop) {
+      if (!currentUser) setAdminImpersonation(null);
+      return;
+    }
     if (currentUser) {
       localStorage.setItem(AUTH_KEY, JSON.stringify(currentUser));
     } else {
       localStorage.removeItem(AUTH_KEY);
       setAdminImpersonation(null);
     }
-  }, [currentUser]);
+  }, [currentUser, desktop]);
 
-  // Initialize Real-time Firestore Sync
+  // Desktop: restore the secure session (auto login) + watch license events.
+  const refreshDesktopSession = useCallback(async () => {
+    const app = getSchoolApp();
+    if (!app) return;
+    try {
+      const res = await app.auth.sessionStatus();
+      if (res && res.session) {
+        setDesktopSession(res.session);
+        if (res.session.authenticated && res.session.user) {
+          const u = res.session.user;
+          setCurrentUser(prev => {
+            // Teacher sessions carry their own local user record.
+            if (prev && prev.id === u.id) return prev;
+            return {
+              id: u.id,
+              name: u.name,
+              email: u.email || '',
+              role: (u.role as User['role']) || 'principal',
+              status: 'active',
+              createdAt: new Date().toISOString(),
+              teacherCode: (u as any).teacherCode,
+              assignedClassId: (u as any).assignedClassId,
+              assignedClassName: (u as any).assignedClassName,
+              subject: (u as any).subject,
+              phone: (u as any).phone,
+              photoUrl: (u as any).photoUrl,
+            } as User;
+          });
+        } else if (!res.session.authenticated) {
+          setCurrentUser(null);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to query desktop session', e);
+    } finally {
+      setDesktopInitializing(false);
+    }
+  }, []);
+
+  // One-time upgrade path: if this computer has a legacy browser export in
+  // localStorage and the local SQLite database is empty, import it once.
   useEffect(() => {
+    if (!desktop || !currentUser) return;
+    const app = getSchoolApp();
+    if (!app) return;
+    try {
+      const legacy = localStorage.getItem(STORAGE_KEY);
+      if (legacy) {
+        app.database
+          .importLegacy({ legacyDatabase: JSON.parse(legacy) })
+          .then(res => {
+            if (res && res.imported) localStorage.removeItem(STORAGE_KEY);
+          })
+          .catch(() => {});
+      }
+    } catch {
+      /* ignore malformed legacy data */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [desktop, currentUser?.id]);
+
+  useEffect(() => {
+    if (!desktop) return;
+    refreshDesktopSession();
+
+    const app = getSchoolApp();
+    if (!app) return;
+    // License state changes pushed from the main process (periodic
+    // revalidation, suspension, revocation) and session restoration.
+    const offLicense = app.auth.onLicenseChanged(() => {
+      refreshDesktopSession();
+    });
+    const offRestored = app.auth.onSessionRestored(() => {
+      refreshDesktopSession();
+    });
+    return () => {
+      offLicense();
+      offRestored();
+    };
+  }, [desktop, refreshDesktopSession]);
+
+  // Initialize the data subscription.
+  // Web: runs immediately (Firestore). Desktop: only once a licensed session
+  // exists — the SQLite database belongs to the signed-in school.
+  const desktopSessionReady = desktop ? !!currentUser : true;
+
+  useEffect(() => {
+    if (desktop && !desktopSessionReady) return;
     let unsubscribe: (() => void) | null = null;
 
     const setupFirestoreRealtime = async () => {
@@ -245,7 +324,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         // Seed default template if firestore is completely empty
         await seedInitialDatabaseIfNeeded();
 
-        // Subscribe to real-time updates from Firestore
+        // Subscribe to data updates (Firestore on web, local SQLite on desktop)
         unsubscribe = subscribeToSchoolDatabase(
           updatedData => {
             setDb(prev => {
@@ -253,27 +332,6 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                 ...prev,
                 ...updatedData,
               };
-
-              // Keep permanent principal active
-              const hasPrincipal = (merged.users || []).some(
-                u => u.role === 'principal' && u.email === 'mozammilalam1996@gmail.com'
-              );
-              if (!hasPrincipal) {
-                merged.users = [
-                  {
-                    id: 'usr_principal_01',
-                    name: 'Mozammil Alam',
-                    email: 'mozammilalam1996@gmail.com',
-                    role: 'principal',
-                    password: '9931066436@',
-                    phone: '+91 99310 66436',
-                    status: 'active',
-                    joiningDate: '2026-01-01',
-                    createdAt: '2026-01-01T00:00:00.000Z',
-                  },
-                  ...(merged.users || []),
-                ];
-              }
               return merged;
             });
 
@@ -302,7 +360,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         unsubscribe();
       }
     };
-  }, []);
+  }, [desktop, desktopSessionReady]);
 
   // Activity logger helper
   const logActivity = useCallback((
@@ -330,30 +388,49 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, [currentUser, adminImpersonation]);
 
   // Authentication methods
-  const loginPrincipal = (email: string, password: string) => {
+  //
+  // Desktop edition: credentials are verified by the central license server
+  // over HTTPS — nothing is checked locally and no credentials are bundled.
+  // Web edition: legacy behavior against the users list (development/demo).
+  const loginPrincipal = async (email: string, password: string) => {
     const inputEmail = email.trim().toLowerCase();
     const inputPass = password.trim();
 
-    // Direct permanent credentials check
-    if (inputEmail === 'mozammilalam1996@gmail.com' && inputPass === '9931066436@') {
-      let principalUser = db.users.find(u => u.role === 'principal' && u.email === 'mozammilalam1996@gmail.com');
-      if (!principalUser) {
-        principalUser = {
-          id: 'usr_principal_01',
-          name: 'Mozammil Alam',
-          email: 'mozammilalam1996@gmail.com',
-          role: 'principal',
-          password: '9931066436@',
-          phone: '+91 99310 66436',
-          status: 'active',
-          joiningDate: '2026-01-01',
-          createdAt: '2026-01-01T00:00:00.000Z',
-        };
+    if (desktop) {
+      const app = getSchoolApp();
+      if (!app) return { success: false, error: 'Desktop services unavailable. Restart the application.' };
+      try {
+        const result = await app.auth.login({ identifier: inputEmail, password: inputPass });
+        if (result.error || !result.ok) {
+          return { success: false, error: result.message || 'Sign-in failed.' };
+        }
+        if (result.session) setDesktopSession(result.session);
+        if (result.session && result.session.user) {
+          const u = result.session.user;
+          setCurrentUser({
+            id: u.id,
+            name: u.name,
+            email: u.email || '',
+            role: 'principal',
+            phone: '',
+            status: 'active',
+            createdAt: new Date().toISOString(),
+          } as User);
+        }
+        setAdminImpersonation(null);
+        return { success: true };
+      } catch (err: any) {
+        return { success: false, error: err.message || 'Sign-in failed.' };
       }
-      setCurrentUser(principalUser);
-      setAdminImpersonation(null);
-      logActivity('LOGIN_PRINCIPAL', `Principal Mozammil Alam logged into Admin Dashboard`);
-      return { success: true };
+    }
+
+    // Web/development fallback (no hard-coded credentials).
+    if (!import.meta.env.DEV) {
+      return {
+        success: false,
+        error:
+          'School Management System sign-in is provided through the installed desktop application. Please contact your software administrator.',
+      };
     }
 
     const user = db.users.find(
@@ -362,7 +439,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     if (!user) {
       return { success: false, error: 'No Principal account found with this email address.' };
     }
-    if (user.password && user.password !== inputPass) {
+    if (!user.password || user.password !== inputPass) {
       return { success: false, error: 'Incorrect password. Please try again.' };
     }
     setCurrentUser(user);
@@ -414,11 +491,34 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return { success: true };
   };
 
-  const loginTeacher = (code: string) => {
+  const loginTeacher = async (code: string) => {
     const cleanCode = code.trim().toUpperCase();
     if (!cleanCode) {
       return { success: false, error: 'Please enter your unique Teacher Code.' };
     }
+
+    if (desktop) {
+      // Teacher sign-in is local (offline-first) but only possible on a
+      // computer that already has an active, licensed school session.
+      const app = getSchoolApp();
+      if (!app) return { success: false, error: 'Desktop services unavailable.' };
+      try {
+        const result = await app.auth.loginTeacherLocal(cleanCode);
+        if (result.error || !result.ok) {
+          return { success: false, error: result.message || 'Invalid Teacher Code.' };
+        }
+        if (result.session) setDesktopSession(result.session);
+        const localTeacher = db.users.find(
+          u => u.role === 'teacher' && u.teacherCode?.toUpperCase() === cleanCode
+        );
+        if (localTeacher) setCurrentUser(localTeacher);
+        setAdminImpersonation(null);
+        return { success: true };
+      } catch (err: any) {
+        return { success: false, error: err.message || 'Teacher sign-in failed.' };
+      }
+    }
+
     const teacher = db.users.find(
       u => u.role === 'teacher' && u.teacherCode?.toUpperCase() === cleanCode
     );
@@ -437,6 +537,12 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const logout = () => {
     if (currentUser) {
       logActivity('LOGOUT', `${currentUser.name} logged out`);
+    }
+    if (desktop) {
+      const app = getSchoolApp();
+      if (app) {
+        app.auth.logout().then(() => refreshDesktopSession()).catch(() => refreshDesktopSession());
+      }
     }
     setCurrentUser(null);
     setAdminImpersonation(null);
@@ -1178,6 +1284,12 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const resetDatabaseToDemo = () => {
+    if (desktop) {
+      // Demo reset is intentionally unavailable in the commercial desktop
+      // edition — it must never wipe a real school's live data.
+      console.warn('Demo reset is disabled in the desktop edition.');
+      return;
+    }
     setDb(INITIAL_SCHOOL_DATABASE);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_SCHOOL_DATABASE));
     seedInitialDatabaseIfNeeded();
@@ -1193,9 +1305,28 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         return { success: false, error: 'Missing required school data fields (schoolInfo, students, classes)' };
       }
 
+      if (desktop) {
+        const app = getSchoolApp();
+        if (app) {
+          // Main process takes a safety backup before replacing.
+          app.database
+            .replaceAll(importedDb)
+            .then(res => {
+              if (res && res.error) {
+                console.error('Desktop import failed:', res.message);
+                return;
+              }
+              setDb(importedDb);
+            })
+            .catch(e => console.error('Desktop import failed:', e));
+        }
+        logActivity('DATABASE_RESTORE', 'Restored complete school database from client backup file');
+        return { success: true };
+      }
+
       setDb(importedDb);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(importedDb));
-      
+
       // Sync imported objects to firestore
       if (importedDb.schoolInfo) saveSchoolInfoToFirestore(importedDb.schoolInfo).catch(e => console.error(e));
       importedDb.classes?.forEach(c => saveClassToFirestore(c).catch(e => console.error(e)));
@@ -1222,6 +1353,10 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         isCloudSyncing,
         lastCloudSyncTime,
         cloudError,
+        isDesktop: desktop,
+        desktopSession,
+        desktopInitializing,
+        refreshDesktopSession,
         loginPrincipal,
         setupSchoolAndPrincipal,
         loginTeacher,

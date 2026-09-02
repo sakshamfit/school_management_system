@@ -1,0 +1,5 @@
+{
+  "licenseServerUrl": "https://license.schoolms.example.com",
+  "environment": "production",
+  "_comment": "Release-time placeholder. Before publishing, set the real license server URL via `node scripts/configure-release.js --license-server-url <url>` (writes this file) or ship an override at %LOCALAPPDATA%/SchoolManagementSystem/config/server.json on customer machines. The placeholder domain intentionally fails so no build can ship pointing at a dev server by accident."
+}

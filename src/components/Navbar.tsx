@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useSchool } from '../context/SchoolContext';
 import { ClientHandoverModal } from './settings/ClientHandoverModal';
+import { isDesktopApp } from '../services/desktopBridge';
 
 interface NavbarProps {
   currentTab: string;
@@ -74,6 +75,12 @@ export const Navbar: React.FC<NavbarProps> = ({
         return 'Audit Logs';
       case 'settings':
         return 'School Settings';
+      case 'license':
+        return 'License';
+      case 'backup':
+        return 'Backup & Restore';
+      case 'about':
+        return 'About & Updates';
       default:
         return 'School Management';
     }
@@ -317,16 +324,18 @@ export const Navbar: React.FC<NavbarProps> = ({
                     </button>
                   )}
 
-                  <button
-                    onClick={() => {
-                      setShowHandoverModal(true);
-                      setShowUserMenu(false);
-                    }}
-                    className="w-full flex items-center space-x-2 px-3 py-2 text-xs font-medium text-[#1d1d1f] hover:bg-[#f5f5f7] rounded-lg transition-colors"
-                  >
-                    <Laptop className="h-4 w-4 text-[#0066cc] shrink-0" />
-                    <span>Desktop App & Setup</span>
-                  </button>
+                  {!isDesktopApp() && (
+                    <button
+                      onClick={() => {
+                        setShowHandoverModal(true);
+                        setShowUserMenu(false);
+                      }}
+                      className="w-full flex items-center space-x-2 px-3 py-2 text-xs font-medium text-[#1d1d1f] hover:bg-[#f5f5f7] rounded-lg transition-colors"
+                    >
+                      <Laptop className="h-4 w-4 text-[#0066cc] shrink-0" />
+                      <span>Desktop App & Setup</span>
+                    </button>
+                  )}
 
                   <button
                     onClick={() => {
@@ -345,7 +354,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
-      {/* Client Handover & Desktop Modal */}
+      {/* Client Handover & Desktop Modal (web edition only) */}
       <ClientHandoverModal
         isOpen={showHandoverModal}
         onClose={() => setShowHandoverModal(false)}

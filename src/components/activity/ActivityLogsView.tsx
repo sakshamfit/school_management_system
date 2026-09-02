@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useSchool } from '../../context/SchoolContext';
 import { formatDate } from '../../utils/helpers';
+import { isDesktopApp } from '../../services/desktopBridge';
 
 export const ActivityLogsView: React.FC = () => {
   const { db, resetDatabaseToDemo } = useSchool();
@@ -84,13 +85,15 @@ export const ActivityLogsView: React.FC = () => {
             />
           </div>
 
-          <button
-            onClick={resetDatabaseToDemo}
-            className="text-xs font-semibold text-[#ff3b30] hover:underline flex items-center space-x-1.5 px-3 py-1.5 rounded-full hover:bg-[#ff3b30]/10 transition-colors"
-          >
-            <RefreshCw className="h-3.5 w-3.5 shrink-0" />
-            <span>Reset Demo DB</span>
-          </button>
+          {!isDesktopApp() && (
+            <button
+              onClick={resetDatabaseToDemo}
+              className="text-xs font-semibold text-[#ff3b30] hover:underline flex items-center space-x-1.5 px-3 py-1.5 rounded-full hover:bg-[#ff3b30]/10 transition-colors"
+            >
+              <RefreshCw className="h-3.5 w-3.5 shrink-0" />
+              <span>Reset Demo DB</span>
+            </button>
+          )}
         </div>
 
         <div className="divide-y divide-[#f0f0f0] max-h-[60vh] overflow-y-auto pr-1">

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { AlertTriangle } from 'lucide-react';
 import { SchoolProvider, useSchool } from './context/SchoolContext';
 import { AuthScreen } from './components/auth/AuthScreen';
 import { Navbar } from './components/Navbar';
@@ -26,8 +27,59 @@ import { ReportsView } from './components/reports/ReportsView';
 import { AcademicYearView } from './components/academic/AcademicYearView';
 import { ActivityLogsView } from './components/activity/ActivityLogsView';
 import { SchoolSettingsView } from './components/settings/SchoolSettingsView';
+import { LicenseView } from './components/settings/LicenseView';
+import { BackupView } from './components/settings/BackupView';
+import { AboutView } from './components/settings/AboutView';
 import { QuickSearchModal } from './components/QuickSearchModal';
+import { isDesktopApp, getSchoolApp } from './services/desktopBridge';
 import { Student } from './types';
+
+/**
+ * Fatal startup error overlay (desktop). Shown if the local database cannot be
+ * opened (e.g. corruption). Always points the user at their latest backup so
+ * data is recoverable without support.
+ */
+const DesktopFatalError: React.FC = () => {
+  const [fatal, setFatal] = useState<{ code: string; message: string } | null>(null);
+
+  React.useEffect(() => {
+    if (!isDesktopApp()) return;
+    const app = getSchoolApp();
+    if (!app) return;
+    return app.system.onStartupError((payload) => setFatal(payload));
+  }, []);
+
+  if (!fatal) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#f5f5f7] p-6">
+      <div className="max-w-md w-full bg-white rounded-[20px] border border-[#e5e5ea] p-7 shadow-xl text-center">
+        <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-[#ff3b30]/10 text-[#ff3b30] mb-4">
+          <AlertTriangle className="h-7 w-7" />
+        </div>
+        <h1 className="text-lg font-semibold text-[#1d1d1f]">The local database could not be opened.</h1>
+        <p className="text-xs text-[#86868b] mt-2 leading-relaxed">
+          Your latest backup is available and your school data is safe. Open the backup folder to locate the most recent
+          file, then restore it from Backup &amp; Restore after restarting, or contact support with your diagnostics.
+        </p>
+        <div className="flex justify-center gap-2 mt-5">
+          <button
+            onClick={() => getSchoolApp()?.backup.openFolder()}
+            className="apple-btn-primary py-2 px-4 text-xs"
+          >
+            Open Backup Folder
+          </button>
+          <button
+            onClick={() => window.location.reload()}
+            className="apple-btn-secondary py-2 px-4 text-xs"
+          >
+            Restart
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const MainLayout: React.FC = () => {
   const { currentUser, adminImpersonation } = useSchool();
@@ -165,6 +217,12 @@ const MainLayout: React.FC = () => {
 
           {currentTab === 'settings' && <SchoolSettingsView />}
 
+          {currentTab === 'license' && isDesktopApp() && <LicenseView />}
+
+          {currentTab === 'backup' && isDesktopApp() && <BackupView />}
+
+          {currentTab === 'about' && isDesktopApp() && <AboutView />}
+
           {currentTab === 'my-attendance' && (
             <TeacherDashboard
               onNavigate={navigateTab}
@@ -282,6 +340,7 @@ const MainLayout: React.FC = () => {
 export default function App() {
   return (
     <SchoolProvider>
+      <DesktopFatalError />
       <MainLayout />
     </SchoolProvider>
   );

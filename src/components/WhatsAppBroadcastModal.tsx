@@ -55,7 +55,7 @@ export const WhatsAppBroadcastModal: React.FC<WhatsAppBroadcastModalProps> = ({
   const getTemplateText = (student: typeof db.students[0]) => {
     const fee = db.feeAccounts.find(fa => fa.studentId === student.id);
     const schoolName = db.schoolInfo.name || 'M.S. Public School';
-    const schoolPhone = db.schoolInfo.phone || '+91 9931066436';
+    const schoolPhone = db.schoolInfo.phone || '';
 
     switch (templateType) {
       case 'attendance':

@@ -17,16 +17,21 @@ import {
 import { useSchool } from '../../context/SchoolContext';
 import { ClientHandoverModal } from './ClientHandoverModal';
 import { exportDatabaseToJson } from '../../utils/helpers';
+import { isDesktopApp } from '../../services/desktopBridge';
 
 export const SchoolSettingsView: React.FC = () => {
   const {
     db,
     updateSchoolSettings,
     lastCloudSyncTime,
+    desktopSession,
   } = useSchool();
 
-  // School name is permanently locked to "M.S. PUBLIC SCHOOL"
+  const desktop = isDesktopApp();
+  // Web/demo build keeps the legacy locked branding; the desktop edition
+  // uses the school name provisioned by the license server (editable below).
   const LOCKED_SCHOOL_NAME = 'M.S. PUBLIC SCHOOL';
+  const [schoolName, setSchoolName] = useState(db.schoolInfo.name || LOCKED_SCHOOL_NAME);
   const [tagline, setTagline] = useState(db.schoolInfo.tagline || 'Knowledge is Power • Empowering Young Minds');
   const [phone, setPhone] = useState(db.schoolInfo.phone || '+91 98765 43210');
   const [email, setEmail] = useState(db.schoolInfo.email || 'info@mspublicschool.edu.in');
@@ -41,7 +46,7 @@ export const SchoolSettingsView: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateSchoolSettings({
-      name: LOCKED_SCHOOL_NAME,
+      name: desktop ? schoolName.trim() || LOCKED_SCHOOL_NAME : LOCKED_SCHOOL_NAME,
       tagline,
       phone,
       email,
@@ -73,17 +78,19 @@ export const SchoolSettingsView: React.FC = () => {
           </div>
         </div>
 
-        <button
-          onClick={() => setShowHandoverModal(true)}
-          className="apple-btn-primary py-2.5 px-4 text-xs shrink-0 flex items-center space-x-2"
-        >
-          <Laptop className="h-4 w-4 shrink-0" />
-          <span>Desktop App & Client Handover</span>
-        </button>
+        {!desktop && (
+          <button
+            onClick={() => setShowHandoverModal(true)}
+            className="apple-btn-primary py-2.5 px-4 text-xs shrink-0 flex items-center space-x-2"
+          >
+            <Laptop className="h-4 w-4 shrink-0" />
+            <span>Desktop App & Client Handover</span>
+          </button>
+        )}
       </div>
 
-      {/* Desktop App & Backup Quick Access Card */}
-      <div className="bg-gradient-to-r from-[#0066cc]/5 via-white to-[#30d158]/5 rounded-[18px] border border-[#0066cc]/20 p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Desktop App & Backup Quick Access Card (web edition only) */}
+      {!desktop && <div className="bg-gradient-to-r from-[#0066cc]/5 via-white to-[#30d158]/5 rounded-[18px] border border-[#0066cc]/20 p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center space-x-2">
             <ShieldCheck className="h-4 w-4 text-[#0066cc] shrink-0" />
@@ -109,9 +116,9 @@ export const SchoolSettingsView: React.FC = () => {
             <span>Open Client Hub</span>
           </button>
         </div>
-      </div>
+      </div>}
 
-      {/* Cloud Sync Status Card */}
+      {/* Data Storage Status Card */}
       <div className="bg-white rounded-[18px] border border-[#e5e5ea] p-6 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#f0f0f0]">
           <div className="flex items-center space-x-3">
@@ -121,15 +128,17 @@ export const SchoolSettingsView: React.FC = () => {
             <div>
               <div className="flex items-center space-x-2">
                 <h3 className="font-semibold text-sm text-[#1d1d1f]">
-                  Firestore Real-Time Cloud Sync
+                  {desktop ? 'Local School Database (SQLite)' : 'Firestore Real-Time Cloud Sync'}
                 </h3>
                 <span className="inline-flex items-center gap-1.5 bg-[#30d158]/10 text-[#30d158] px-2.5 py-0.5 rounded-full text-[10px] font-semibold">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#30d158] animate-pulse"></span>
-                  Active & Synced
+                  {desktop ? (desktopSession?.mode === 'offline' ? 'Offline Ready' : 'Healthy') : 'Active & Synced'}
                 </span>
               </div>
               <p className="text-xs text-[#86868b] mt-0.5">
-                Bidirectional offline-first sync enabled across all devices
+                {desktop
+                  ? 'All school data is stored securely on this computer. Daily backups run automatically.'
+                  : 'Bidirectional offline-first sync enabled across all devices'}
               </p>
             </div>
           </div>
@@ -137,10 +146,10 @@ export const SchoolSettingsView: React.FC = () => {
 
         <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
           <div className="bg-[#f5f5f7] p-3.5 rounded-xl border border-[#e5e5ea]">
-            <span className="text-[11px] text-[#86868b] block">Protocol</span>
+            <span className="text-[11px] text-[#86868b] block">{desktop ? 'Storage' : 'Protocol'}</span>
             <span className="font-semibold text-[#30d158] flex items-center gap-1 mt-1 text-xs">
               <Wifi className="h-3.5 w-3.5 shrink-0" />
-              WebSocket Live
+              {desktop ? 'This PC • AppData' : 'WebSocket Live'}
             </span>
           </div>
 
@@ -159,9 +168,13 @@ export const SchoolSettingsView: React.FC = () => {
           </div>
 
           <div className="bg-[#f5f5f7] p-3.5 rounded-xl border border-[#e5e5ea]">
-            <span className="text-[11px] text-[#86868b] block">Last Sync</span>
+            <span className="text-[11px] text-[#86868b] block">{desktop ? 'License' : 'Last Sync'}</span>
             <span className="font-semibold text-[#86868b] mt-1 block text-xs">
-              {lastCloudSyncTime || 'Live Continuous'}
+              {desktop
+                ? desktopSession?.license
+                  ? `${desktopSession.license.effectiveStatus} • ${db.students.length} students`
+                  : '—'
+                : lastCloudSyncTime || 'Live Continuous'}
             </span>
           </div>
         </div>
@@ -182,23 +195,32 @@ export const SchoolSettingsView: React.FC = () => {
               <label className="block text-xs font-semibold text-[#86868b]">
                 School Name
               </label>
-              <span className="inline-flex items-center space-x-1 text-[10px] font-semibold text-[#86868b] bg-[#f5f5f7] px-2 py-0.5 rounded-full border border-[#e5e5ea]">
-                <Lock className="h-3 w-3 text-[#86868b] shrink-0" />
-                <span>Locked Permanently</span>
-              </span>
+              {!desktop && (
+                <span className="inline-flex items-center space-x-1 text-[10px] font-semibold text-[#86868b] bg-[#f5f5f7] px-2 py-0.5 rounded-full border border-[#e5e5ea]">
+                  <Lock className="h-3 w-3 text-[#86868b] shrink-0" />
+                  <span>Locked Permanently</span>
+                </span>
+              )}
             </div>
             <div className="relative">
               <School className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#86868b]" />
               <input
                 type="text"
-                readOnly
-                disabled
-                value={LOCKED_SCHOOL_NAME}
-                className="apple-input pl-10 bg-[#f5f5f7] cursor-not-allowed font-semibold text-[#1d1d1f] select-none opacity-90"
+                readOnly={!desktop}
+                disabled={!desktop}
+                value={desktop ? schoolName : LOCKED_SCHOOL_NAME}
+                onChange={e => setSchoolName(e.target.value)}
+                className={
+                  desktop
+                    ? 'apple-input pl-10'
+                    : 'apple-input pl-10 bg-[#f5f5f7] cursor-not-allowed font-semibold text-[#1d1d1f] select-none opacity-90'
+                }
               />
             </div>
             <p className="text-[11px] text-[#86868b] mt-1">
-              Institutional name is locked to <strong>M.S. PUBLIC SCHOOL</strong> and cannot be altered.
+              {desktop
+                ? 'The official name of your school, shown across the application and printed reports.'
+                : <>Institutional name is locked to <strong>M.S. PUBLIC SCHOOL</strong> and cannot be altered.</>}
             </p>
           </div>
 

@@ -1,0 +1,7 @@
+{
+  "name": "sms-desktop-shell",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "description": "Electron main-process shell for School Management System (CJS scope)."
+}
