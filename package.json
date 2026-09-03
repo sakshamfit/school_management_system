@@ -23,13 +23,20 @@
     "desktop:linux": "vite build && npx electron-builder --linux",
     "dist:win": "node scripts/write-build-config.mjs && npm run build && npm run build:admin && npx electron-builder --win",
     "dist:linux": "node scripts/write-build-config.mjs && npm run build && npm run build:admin && npx electron-builder --linux",
-    "audit:prod": "node scripts/audit-prod.mjs",
-    "release:check": "node scripts/release-check.mjs",
+ "audit:prod": "node scripts/audit-prod.mjs",
+ "release:check": "node scripts/release-check.mjs",
+ "android:init": "node scripts/write-build-config.mjs && npm run build && npx cap add android",
+ "android:sync": "npm run build && npx cap sync android",
+ "android:apk": "node scripts/write-build-config.mjs && npm run build && npx cap sync android && cd android && gradlew assembleRelease && copy app\\build\\outputs\\apk\\release\\app-release.apk ..\\SchoolManagement-Android.apk",
+ "android:apk:bash": "node scripts/write-build-config.mjs && npm run build && npx cap sync android && cd android && ./gradlew assembleRelease && cp app/build/outputs/apk/release/app-release.apk ../SchoolManagement-Android.apk",
+ "android:open": "npx cap open android",
     "test:all": "npm run lint && npm run server:test",
     "clean": "rm -rf dist release server/public/admin",
     "lint": "tsc --noEmit"
   },
   "dependencies": {
+    "@capacitor/android": "^7.6.9",
+    "@capacitor/core": "^7.6.9",
     "@google/genai": "^2.4.0",
     "@tailwindcss/vite": "^4.1.14",
     "@types/canvas-confetti": "^1.9.0",
@@ -50,6 +57,7 @@
     "vite": "^6.2.3"
   },
   "devDependencies": {
+    "@capacitor/cli": "^7.6.9",
     "@types/express": "^4.17.21",
     "@types/node": "^22.14.0",
     "autoprefixer": "^10.4.21",

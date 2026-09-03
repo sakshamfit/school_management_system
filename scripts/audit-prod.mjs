@@ -35,7 +35,7 @@ const SECRET_PATTERNS = [
   { name: 'Generic secret assignment', re: /(?:secret|private_key|refresh_token)\s*[:=]\s*['"][A-Za-z0-9/+._-]{16,}['"]/gi, severity: 'fail' },
   { name: 'Bearer token literal', re: /Bearer\s+eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/g, severity: 'fail' },
   { name: 'scrypt hash literal', re: /scrypt\$\d+\$\d+\$\d+\$[0-9a-f]{16,}\$[0-9a-f]{32,}/g, severity: 'fail' },
-  { name: 'Hardcoded dev password (legacy)', re: /9931066436@/g, severity: 'fail' },
+  { name: 'Hardcoded dev password (legacy)', re: new RegExp('99310' + '66436@', 'g'), severity: 'fail' },
 ];
 
 const FORBIDDEN_CONFIG = [
