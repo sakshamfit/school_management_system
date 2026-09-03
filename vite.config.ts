@@ -42,6 +42,7 @@ function cspPlugin(): Plugin {
 
 export default defineConfig(() => {
   return {
+    base: './',
     plugins: [react(), tailwindcss(), cspPlugin()],
     resolve: {
       alias: {
