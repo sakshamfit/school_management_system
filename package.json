@@ -76,12 +76,15 @@
     "directories": {
       "output": "release"
     },
+    "npmRebuild": false,
     "files": [
       "dist/**/*",
       "electron.cjs",
       "electron/**/*",
       "assets/icon.png",
       "package.json",
+      "!node_modules/better-sqlite3/**",
+      "!node_modules/node-addon-api/**",
       "!server/**",
       "!admin/**",
       "!src/**",
