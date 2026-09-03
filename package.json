@@ -23,13 +23,13 @@
     "desktop:linux": "vite build && npx electron-builder --linux",
     "dist:win": "node scripts/write-build-config.mjs && npm run build && npm run build:admin && npx electron-builder --win",
     "dist:linux": "node scripts/write-build-config.mjs && npm run build && npm run build:admin && npx electron-builder --linux",
- "audit:prod": "node scripts/audit-prod.mjs",
- "release:check": "node scripts/release-check.mjs",
- "android:init": "node scripts/write-build-config.mjs && npm run build && npx cap add android",
- "android:sync": "npm run build && npx cap sync android",
- "android:apk": "node scripts/write-build-config.mjs && npm run build && npx cap sync android && cd android && gradlew assembleRelease && copy app\\build\\outputs\\apk\\release\\app-release.apk ..\\SchoolManagement-Android.apk",
- "android:apk:bash": "node scripts/write-build-config.mjs && npm run build && npx cap sync android && cd android && ./gradlew assembleRelease && cp app/build/outputs/apk/release/app-release.apk ../SchoolManagement-Android.apk",
- "android:open": "npx cap open android",
+    "audit:prod": "node scripts/audit-prod.mjs",
+    "release:check": "node scripts/release-check.mjs",
+    "android:init": "node scripts/write-build-config.mjs && npm run build && npx cap add android",
+    "android:sync": "npm run build && npx cap sync android",
+    "android:apk": "node scripts/write-build-config.mjs && npm run build && npx cap sync android && cd android && gradlew assembleRelease && copy app\\build\\outputs\\apk\\release\\app-release.apk ..\\SchoolManagement-Android.apk",
+    "android:apk:bash": "node scripts/write-build-config.mjs && npm run build && npx cap sync android && cd android && ./gradlew assembleRelease && cp app/build/outputs/apk/release/app-release.apk ../SchoolManagement-Android.apk",
+    "android:open": "npx cap open android",
     "test:all": "npm run lint && npm run server:test",
     "clean": "rm -rf dist release server/public/admin",
     "lint": "tsc --noEmit"
@@ -90,12 +90,15 @@
       "!src/**",
       "!scripts/**",
       "!.env*",
-      "!*.md"
+      "!*.md",
+      "!android/**",
+      "!node_modules/better-sqlite3/**"
     ],
     "asar": true,
     "asarUnpack": [
       "assets/icon.png"
     ],
+    "npmRebuild": false,
     "win": {
       "target": [
         "nsis"
