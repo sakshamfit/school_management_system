@@ -17,30 +17,47 @@ export const AuthScreen: React.FC = () => {
 
   const [authMode, setAuthMode] = useState<'selection' | 'principal_login' | 'teacher_login'>('selection');
 
-  // Principal Login Form State (preloaded with permanent email)
+  // Principal Login Form State
+  // NOTE: authentication now runs through Firebase Auth (password verified
+  // by Google, never stored in this app). The email is pre-filled as a
+  // convenience only — it is not a credential.
   const [principalEmail, setPrincipalEmail] = useState('mozammilalam1996@gmail.com');
   const [principalPassword, setPrincipalPassword] = useState('');
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [principalBusy, setPrincipalBusy] = useState(false);
 
   // Teacher Login Form State
   const [teacherCode, setTeacherCode] = useState('');
   const [teacherError, setTeacherError] = useState<string | null>(null);
+  const [teacherBusy, setTeacherBusy] = useState(false);
 
-  const handlePrincipalSubmit = (e: React.FormEvent) => {
+  const handlePrincipalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (principalBusy) return;
     setLoginError(null);
-    const res = loginPrincipal(principalEmail, principalPassword);
-    if (!res.success) {
-      setLoginError(res.error || 'Invalid email or password');
+    setPrincipalBusy(true);
+    try {
+      const res = await loginPrincipal(principalEmail, principalPassword);
+      if (!res.success) {
+        setLoginError(res.error || 'Invalid email or password');
+      }
+    } finally {
+      setPrincipalBusy(false);
     }
   };
 
-  const handleTeacherSubmit = (e: React.FormEvent) => {
+  const handleTeacherSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (teacherBusy) return;
     setTeacherError(null);
-    const res = loginTeacher(teacherCode);
-    if (!res.success) {
-      setTeacherError(res.error || 'Invalid 6-Digit Teacher Code');
+    setTeacherBusy(true);
+    try {
+      const res = await loginTeacher(teacherCode);
+      if (!res.success) {
+        setTeacherError(res.error || 'Invalid 6-Digit Teacher Code');
+      }
+    } finally {
+      setTeacherBusy(false);
     }
   };
 
@@ -190,9 +207,10 @@ export const AuthScreen: React.FC = () => {
 
               <button
                 type="submit"
-                className="w-full apple-btn-primary py-3 mt-2 flex items-center justify-center space-x-2"
+                disabled={principalBusy}
+                className="w-full apple-btn-primary py-3 mt-2 flex items-center justify-center space-x-2 disabled:opacity-60"
               >
-                <span>Access Principal Console</span>
+                <span>{principalBusy ? 'Verifying with Google Firebase…' : 'Access Principal Console'}</span>
                 <ArrowRight className="h-4 w-4 shrink-0" />
               </button>
             </form>
@@ -253,9 +271,10 @@ export const AuthScreen: React.FC = () => {
 
               <button
                 type="submit"
-                className="w-full apple-btn-primary py-3 mt-2 flex items-center justify-center space-x-2"
+                disabled={teacherBusy}
+                className="w-full apple-btn-primary py-3 mt-2 flex items-center justify-center space-x-2 disabled:opacity-60"
               >
-                <span>Enter Teacher Portal</span>
+                <span>{teacherBusy ? 'Signing in…' : 'Enter Teacher Portal'}</span>
                 <ArrowRight className="h-4 w-4 shrink-0" />
               </button>
             </form>

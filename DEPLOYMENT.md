@@ -1,122 +1,123 @@
 # 🏫 M.S. PUBLIC SCHOOL — Deployment & Client Handover Guide
 
-Comprehensive guide for deploying, packaging as a Desktop App, and delivering the **M.S. Public School Management Portal** to your client.
+Comprehensive guide for deploying the school portal as a web app and packaging
+the desktop application.
+
+> 🔐 **Commercial licensing, the admin control panel, releases and the
+> production API server are documented separately — see
+> [CONTROL_PLANE.md](./CONTROL_PLANE.md).**
 
 ---
 
-## 📋 Client Credentials & Master Access Sheet
+## 🔐 Authentication Model (hardened — September 2026)
 
-Share these credentials with the school principal and administrators:
+Credentials are **no longer shipped in this repository or in this document**.
 
-| Role | Access Type | Login Identifier | Password / Access Code | Permissions |
-| :--- | :--- | :--- | :--- | :--- |
-| **Principal / Super Admin** | Email & Password | `mozammilalam1996@gmail.com` | `9931066436@` | Full system control: Faculty, Students, Fee Treasury, Marksheets, Audit Logs, Settings |
-| **Faculty / Class Teachers** | 6-Digit Code | Any registered Teacher Code (e.g. `501001`, `501002`) | *No password required* | Live Class Attendance, Mark Entry, Student Observations, Multi-device access |
+| Role | Mechanism | Where it's managed |
+| :-- | :-- | :-- |
+| **Principal / Super Admin** | Firebase Authentication — email + password (verified by Google; never stored in the app, Firestore, or any file) | Firebase Console → Authentication → Users |
+| **Faculty / Class Teachers** | 6-digit teacher code (app establishes an anonymous Firebase session first) | Principal adds teachers in-app; codes shown in the app |
+
+### One-time Firebase setup (REQUIRED after upgrading to the hardened build)
+
+The app will not authenticate until these steps are done:
+
+1. Open the [Firebase Console](https://console.firebase.google.com) → project `mspublicschool-ddfaf`.
+2. **Authentication → Sign-in method**:
+   - Enable **Email/Password**.
+   - Enable **Anonymous** (used behind teacher-code sign-in).
+3. **Authentication → Users → Add user**: create the principal account with the
+   school's principal email and a strong password (deliver it through a secure
+   channel — never commit it anywhere).
+4. **Firestore Database → Rules**: publish the hardened rules from
+   [`firestore.rules`](./firestore.rules) (`request.auth != null` required).
+
+> ⚠️ **Action required now:** the previous principal password is retired.
+> It existed in source history — treat it as compromised and do not reuse it.
+
+**Current rule limitation (tracked):** any *authenticated* session can still
+read/write all Firestore documents. Per-user least-privilege rules arrive with
+the phase-2 local-SQLite architecture. See `PRODUCTION_REPORT.md`.
 
 ---
 
-## 🚀 Option 1: Live Web & Cloud Deployment (Recommended)
-
-This allows the principal and all teachers to access the school portal simultaneously from any PC, laptop, or mobile phone.
-
-### 1. Build the Production Application
-Run the build script to generate the optimized, production-ready static bundle in `/dist`:
+## 🚀 Option 1: Live Web & Cloud Deployment
 
 ```bash
-npm run build
+npm install
+npm run build        # outputs dist/ (CSP meta injected automatically)
 ```
 
-### 2. Deployment Targets
+### A. Vercel
+1. Push this project to GitHub and import it at [vercel.com](https://vercel.com).
+2. Framework preset: **Vite** • Build: `npm run build` • Output: `dist`.
 
-#### A. Vercel (Fastest — 1 Minute)
-1. Push this project to GitHub.
-2. Go to [vercel.com](https://vercel.com) and click **"Add New Project"**.
-3. Import the repository.
-4. Set:
-   - **Framework Preset**: `Vite`
-   - **Build Command**: `npm run build`
-   - **Output Directory**: `dist`
-5. Click **Deploy**. You will receive a live URL (e.g. `https://mspublicschool.vercel.app`) with free automatic SSL.
-
-#### B. Firebase Hosting
+### B. Firebase Hosting
 ```bash
-# Install Firebase CLI if not already installed
 npm install -g firebase-tools
-
-# Login to Firebase
 firebase login
-
-# Deploy static files
 firebase deploy --only hosting
 ```
 
-#### C. Custom School Domain (e.g. `portal.mspublicschool.edu.in`)
-In your Vercel or Firebase dashboard, navigate to **Domains** and add the school's custom sub-domain with a standard CNAME record.
+### C. Custom domain
+Add the school's sub-domain in the hosting dashboard with a standard CNAME record.
 
 ---
 
-## 🖥️ Option 2: 1-Click Desktop App (Windows & Mac)
+## 🖥️ Option 2: Desktop App (Electron)
 
-Once the app is running (or deployed), the client can install it as a **native desktop application** with zero technical setup:
-
-### On Windows 10 / 11 (Google Chrome or Microsoft Edge):
-1. Open the portal URL in **Chrome** or **Edge**.
-2. Click the **Install App icon (⊕)** on the right side of the address bar, or click **Settings (⋮) → "Install M.S. Public School"**.
-3. Click **Install**.
-4. ✅ A dedicated desktop window will launch, and a shortcut is placed on the **Windows Desktop** and **Start Menu**.
-
-### On macOS (Apple Safari):
-1. Open the portal in **Safari**.
-2. From the top Apple menu bar, select **File → Add to Dock...**
-3. Click **Add**.
-4. ✅ The school app will appear directly in the **Mac Dock** and **Launchpad / Applications**.
-
----
-
-## 📦 Option 3: Standalone Desktop Executable (.exe / .dmg)
-
-If the client specifically requested a standalone installer file without opening a browser:
-
-### 1. Test Desktop App locally:
+### Development
 ```bash
 npm run build
 npx electron .
 ```
 
-### 2. Build Native Windows Installer (`.exe`):
+### Windows installer (on a Windows machine)
 ```bash
-npm run desktop:win
-```
-*Output: Generates a standalone Windows setup executable in `/dist_electron/` or `/dist/`.*
+# 1. Inject the production licensing API URL into the build
+SMS_API_URL="https://api.YOURDOMAIN" node scripts/write-build-config.mjs
 
-### 3. Build macOS App (`.dmg`):
-```bash
-npm run desktop:mac
+# 2. Full release pipeline
+npm run test:all          # typecheck + control-plane test suite
+npm run audit:prod        # secret-scan of everything that ships
+npm run release:check     # packaging gate
+npm run dist:win          # builds web + admin + SchoolManagementSetup-<version>.exe
 ```
+
+Output: `release/SchoolManagementSetup-<version>.exe` (NSIS; updates never
+delete `%LOCALAPPDATA%\SchoolManagementSystem`).
+
+> 📦 Windows builds produce correctly signed installers only when a
+> code-signing certificate is configured on the build machine — see
+> [CONTROL_PLANE.md](./CONTROL_PLANE.md) § Code signing.
 
 ---
 
 ## 💾 Database Backup, Restore & Cloud Sync
 
-- **Real-Time Cloud Sync**: Every student added, roll-call taken, fee payment collected, or exam mark entered syncs automatically to **Cloud Firestore**.
-- **Offline Mode**: If the school's internet goes down, the app works uninterrupted using local cache and syncs back when reconnected.
-- **Manual Backup (Export JSON)**:
-  1. Open **School Settings** → click **"Export JSON"** or open the **Desktop App & Client Handover Hub**.
-  2. Click **Download JSON Backup** to save a timestamped snapshot of all student records, fee ledgers, and marks on your computer.
-- **Restore / Import**:
-  1. Upload the `.json` backup file via the **Restore Database** button.
-  2. The system imports the entire database and syncs it to the cloud.
+- **Real-Time Cloud Sync**: every student, attendance entry, fee payment, and
+  mark syncs to Cloud Firestore in real time (authenticated sessions only).
+- **Offline (current model)**: Firestore's client cache keeps recently-active
+  data available; the full offline-first local SQLite architecture with
+  customer-owned encrypted Google Drive backups is the roadmap phase
+  documented in `PRODUCTION_REPORT.md` and `CONTROL_PLANE.md`.
+- **Manual backup (Export JSON)**:
+  1. Open **School Settings** → *Desktop App & Client Handover Hub*.
+  2. Click **Download JSON Backup** for a timestamped snapshot.
+- **Restore / Import**: upload the `.json` backup via **Restore Database**.
 
 ---
 
 ## 💬 WhatsApp Integration for Parents
 
-- **Automated Fee Receipts**: When a payment is recorded, click **"WhatsApp Receipt"** to open a pre-formatted message addressed to the parent with invoice number, student name, class, amount paid, and remaining balance.
-- **Absence Alerts**: When roll-call is completed, absence notifications with school helpline details can be sent to absent students' parents with one tap.
-- **Report Cards**: Term marksheets and performance remarks can be shared directly to parents' WhatsApp.
+- **Fee receipts** — pre-formatted receipt message to the parent.
+- **Absence alerts** — one-tap notification to absent students' parents.
+- **Report cards** — term marksheets shared directly.
 
 ---
 
-## 📞 Support & Maintenance
+## 📞 Support
 
-For institutional assistance or custom configuration, contact the system administrator or open the **School Settings** console.
+For institutional assistance contact the system administrator. Inside the
+desktop app, **Settings → About & Support** shows the installation's
+support-safe diagnostics (never any credentials or tokens).

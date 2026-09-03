@@ -6,3 +6,21 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Desktop packaging output
+release/
+dist_electron/
+
+# Control-plane server runtime data (never commit real databases or backups)
+server/data/
+server/backups/
+server/public/admin/
+server/*.db
+server/*.db-wal
+server/*.db-shm
+
+# Electron build caches
+out/
+
+# Desktop build-time config (written by write-build-config.mjs from env)
+electron/build-config.json

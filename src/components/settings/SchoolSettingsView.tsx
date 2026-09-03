@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useSchool } from '../../context/SchoolContext';
 import { ClientHandoverModal } from './ClientHandoverModal';
+import { SupportAboutSection } from './SupportAboutSection';
 import { exportDatabaseToJson } from '../../utils/helpers';
 
 export const SchoolSettingsView: React.FC = () => {
@@ -319,6 +320,9 @@ export const SchoolSettingsView: React.FC = () => {
           </button>
         </div>
       </form>
+
+      {/* Settings → About → Support (desktop app shows licensing diagnostics) */}
+      <SupportAboutSection />
 
       {/* Client Handover Modal */}
       <ClientHandoverModal

@@ -23,7 +23,9 @@ export const INITIAL_SCHOOL_DATABASE: SchoolDatabase = {
       name: 'Mozammil Alam',
       email: 'mozammilalam1996@gmail.com',
       role: 'principal',
-      password: '9931066436@',
+      // No password field: principal authentication is handled by
+      // Firebase Authentication. Passwords are never stored in the app
+      // source, Firestore, or local files.
       phone: '+91 99310 66436',
       status: 'active',
       joiningDate: '2026-01-01',
