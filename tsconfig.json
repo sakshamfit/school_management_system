@@ -22,5 +22,18 @@
     },
     "allowImportingTsExtensions": true,
     "noEmit": true
-  }
+  },
+  "include": [
+    "src",
+    "admin/src",
+    "vite.config.ts",
+    "vite.admin.config.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "server",
+    "electron",
+    "release"
+  ]
 }

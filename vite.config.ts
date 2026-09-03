@@ -1,11 +1,48 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import {defineConfig} from 'vite';
+import {defineConfig, type Plugin} from 'vite';
+
+/**
+ * Injects a Content-Security-Policy meta tag into the PRODUCTION build
+ * only. The dev server stays permissive so HMR and the React preamble
+ * keep working.
+ *
+ * Notes:
+ *  - script-src 'self': the production bundle is fully self-contained.
+ *  - style-src allows inline styles (React style attributes; Tailwind
+ *    output is external CSS).
+ *  - connect-src permits Firebase/Firestore, Firebase Auth, controlled
+ *    https API endpoints, and (desktop) the licensing API host.
+ */
+function cspPlugin(): Plugin {
+  const CSP = [
+    "default-src 'self'",
+    "script-src 'self'",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: https:",
+    "font-src 'self' https://fonts.gstatic.com",
+    "connect-src 'self' https: wss:",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "object-src 'none'",
+    "form-action 'self'",
+  ].join('; ');
+  return {
+    name: 'inject-csp-meta',
+    apply: 'build',
+    transformIndexHtml(html) {
+      return html.replace(
+        '<head>',
+        `<head>\n    <meta http-equiv="Content-Security-Policy" content="${CSP}" />`
+      );
+    },
+  };
+}
 
 export default defineConfig(() => {
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [react(), tailwindcss(), cspPlugin()],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

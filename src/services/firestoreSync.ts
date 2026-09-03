@@ -305,9 +305,12 @@ export const saveSchoolInfoToFirestore = async (schoolInfo: SchoolInfo) => {
 };
 
 // User / Teacher
+// Security hardening: passwords are NEVER written to Firestore. Strip any
+// credential-shaped field before persisting a user document.
 export const saveUserToFirestore = async (user: User) => {
+  const { password: _neverPersisted, ...safeUser } = user;
   const ref = doc(firestore, COLLECTIONS.USERS, user.id);
-  await setDoc(ref, sanitizeData(user), { merge: true });
+  await setDoc(ref, sanitizeData(safeUser as User), { merge: true });
 };
 
 export const deleteUserFromFirestore = async (userId: string) => {

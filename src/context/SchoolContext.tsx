@@ -20,6 +20,13 @@ import {
 import { INITIAL_SCHOOL_DATABASE } from '../data/initialData';
 import { generateTeacherCode, generateReceiptNumber, getTodayDateString } from '../utils/helpers';
 import {
+  watchFirebaseAuth,
+  signInPrincipal,
+  signInTeacherSession,
+  signOutFirebase,
+  mapAuthError,
+} from '../services/firebaseAuth';
+import {
   seedInitialDatabaseIfNeeded,
   subscribeToSchoolDatabase,
   saveSchoolInfoToFirestore,
@@ -65,7 +72,7 @@ interface SchoolContextType {
   cloudError: string | null;
   
   // Auth
-  loginPrincipal: (email: string, password: string) => { success: boolean; error?: string };
+  loginPrincipal: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   setupSchoolAndPrincipal: (data: {
     principalName: string;
     schoolName: string;
@@ -73,7 +80,7 @@ interface SchoolContextType {
     password: string;
     phone?: string;
   }) => { success: boolean; error?: string };
-  loginTeacher: (code: string) => { success: boolean; error?: string };
+  loginTeacher: (code: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   
   // Impersonation
@@ -158,10 +165,15 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         if (saved) {
           const parsed = JSON.parse(saved);
           if (parsed && parsed.schoolInfo) {
-            // Ensure permanent principal is synced
+            // Ensure the principal profile is present in the local list.
+            // NOTE: passwords are never stored here — authentication runs
+            // through Firebase Authentication (services/firebaseAuth).
             const users = (parsed.users || []).filter(
               (u: User) => !u.id.startsWith('usr_teach_') || u.teacherCode
             );
+            users.forEach((u: User) => {
+              delete u.password;
+            });
             const hasPrincipal = users.some(
               (u: User) => u.role === 'principal' && u.email === 'mozammilalam1996@gmail.com'
             );
@@ -171,19 +183,11 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                 name: 'Mozammil Alam',
                 email: 'mozammilalam1996@gmail.com',
                 role: 'principal',
-                password: '9931066436@',
                 phone: '+91 99310 66436',
                 status: 'active',
                 joiningDate: '2026-01-01',
                 createdAt: '2026-01-01T00:00:00.000Z',
               });
-            } else {
-              // Ensure password matches
-              const p = users.find((u: User) => u.role === 'principal' && u.email === 'mozammilalam1996@gmail.com');
-              if (p) {
-                p.password = '9931066436@';
-                p.name = 'Mozammil Alam';
-              }
             }
             parsed.users = users;
             return parsed;
@@ -235,9 +239,11 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   }, [currentUser]);
 
-  // Initialize Real-time Firestore Sync
+  // Initialize Real-time Firestore Sync — ONLY behind an authenticated
+  // Firebase session (hardened Firestore rules deny unauthenticated access).
+  // Principal: email/password (Firebase Auth). Teacher: anonymous session.
   useEffect(() => {
-    let unsubscribe: (() => void) | null = null;
+    let unsubscribeData: (() => void) | null = null;
 
     const setupFirestoreRealtime = async () => {
       try {
@@ -246,7 +252,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         await seedInitialDatabaseIfNeeded();
 
         // Subscribe to real-time updates from Firestore
-        unsubscribe = subscribeToSchoolDatabase(
+        unsubscribeData = subscribeToSchoolDatabase(
           updatedData => {
             setDb(prev => {
               const merged: SchoolDatabase = {
@@ -254,8 +260,13 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                 ...updatedData,
               };
 
-              // Keep permanent principal active
-              const hasPrincipal = (merged.users || []).some(
+              // Security hardening: never keep password material in state,
+              // and keep the principal profile present.
+              merged.users = (merged.users || []).map(u => {
+                const { password: _removed, ...rest } = u;
+                return rest as User;
+              });
+              const hasPrincipal = merged.users.some(
                 u => u.role === 'principal' && u.email === 'mozammilalam1996@gmail.com'
               );
               if (!hasPrincipal) {
@@ -265,13 +276,12 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                     name: 'Mozammil Alam',
                     email: 'mozammilalam1996@gmail.com',
                     role: 'principal',
-                    password: '9931066436@',
                     phone: '+91 99310 66436',
                     status: 'active',
                     joiningDate: '2026-01-01',
                     createdAt: '2026-01-01T00:00:00.000Z',
                   },
-                  ...(merged.users || []),
+                  ...merged.users,
                 ];
               }
               return merged;
@@ -295,12 +305,33 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       }
     };
 
-    setupFirestoreRealtime();
+    const teardown = () => {
+      if (unsubscribeData) {
+        unsubscribeData();
+        unsubscribeData = null;
+      }
+      setIsCloudConnected(false);
+    };
+
+    const stopAuthWatch = watchFirebaseAuth(firebaseUser => {
+      if (firebaseUser) {
+        if (!unsubscribeData) {
+          void setupFirestoreRealtime();
+        }
+      } else {
+        teardown();
+        // Establish an anonymous session so the login screen (school name)
+        // and teacher-code validation can hydrate from Firestore under the
+        // hardened rules (which deny fully-unauthenticated requests).
+        signInTeacherSession().catch(err =>
+          console.warn('[auth] anonymous session unavailable:', err?.code || err)
+        );
+      }
+    });
 
     return () => {
-      if (unsubscribe) {
-        unsubscribe();
-      }
+      stopAuthWatch();
+      teardown();
     };
   }, []);
 
@@ -330,45 +361,39 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, [currentUser, adminImpersonation]);
 
   // Authentication methods
-  const loginPrincipal = (email: string, password: string) => {
+  // Principal authentication is delegated to Firebase Authentication —
+  // passwords are verified server-side by Google. The plaintext password
+  // is never stored anywhere in this app (source, Firestore, or disk).
+  const loginPrincipal = async (email: string, password: string) => {
     const inputEmail = email.trim().toLowerCase();
-    const inputPass = password.trim();
+    try {
+      const credential = await signInPrincipal(inputEmail, password);
+      const authEmail = credential.user.email?.toLowerCase() || inputEmail;
 
-    // Direct permanent credentials check
-    if (inputEmail === 'mozammilalam1996@gmail.com' && inputPass === '9931066436@') {
-      let principalUser = db.users.find(u => u.role === 'principal' && u.email === 'mozammilalam1996@gmail.com');
+      let principalUser = db.users.find(
+        u => u.role === 'principal' && u.email.toLowerCase() === authEmail
+      );
       if (!principalUser) {
+        // First sign-in on a fresh database: create the profile shell for
+        // whoever holds this Firebase Auth account.
         principalUser = {
           id: 'usr_principal_01',
-          name: 'Mozammil Alam',
-          email: 'mozammilalam1996@gmail.com',
+          name: credential.user.displayName || 'Principal',
+          email: authEmail,
           role: 'principal',
-          password: '9931066436@',
-          phone: '+91 99310 66436',
           status: 'active',
-          joiningDate: '2026-01-01',
-          createdAt: '2026-01-01T00:00:00.000Z',
+          joiningDate: getTodayDateString(),
+          createdAt: new Date().toISOString(),
         };
       }
-      setCurrentUser(principalUser);
+      const { password: _neverStored, ...safeUser } = principalUser;
+      setCurrentUser(safeUser as User);
       setAdminImpersonation(null);
-      logActivity('LOGIN_PRINCIPAL', `Principal Mozammil Alam logged into Admin Dashboard`);
+      logActivity('LOGIN_PRINCIPAL', `Principal ${principalUser.name} logged into Admin Dashboard`);
       return { success: true };
+    } catch (err: any) {
+      return { success: false, error: mapAuthError(err?.code) };
     }
-
-    const user = db.users.find(
-      u => u.role === 'principal' && u.email.toLowerCase() === inputEmail
-    );
-    if (!user) {
-      return { success: false, error: 'No Principal account found with this email address.' };
-    }
-    if (user.password && user.password !== inputPass) {
-      return { success: false, error: 'Incorrect password. Please try again.' };
-    }
-    setCurrentUser(user);
-    setAdminImpersonation(null);
-    logActivity('LOGIN_PRINCIPAL', `Principal ${user.name} logged into Admin Dashboard`);
-    return { success: true };
   };
 
   const setupSchoolAndPrincipal = (data: {
@@ -378,12 +403,13 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     password: string;
     phone?: string;
   }) => {
+    // NOTE: the password argument is accepted for API compatibility but is
+    // intentionally NOT stored — credential storage moved to Firebase Auth.
     const newPrincipal: User = {
       id: `usr_prin_${Date.now()}`,
       name: data.principalName.trim(),
       email: data.email.trim().toLowerCase(),
       role: 'principal',
-      password: data.password.trim(),
       phone: data.phone || '',
       status: 'active',
       joiningDate: getTodayDateString(),
@@ -414,7 +440,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return { success: true };
   };
 
-  const loginTeacher = (code: string) => {
+  const loginTeacher = async (code: string) => {
     const cleanCode = code.trim().toUpperCase();
     if (!cleanCode) {
       return { success: false, error: 'Please enter your unique Teacher Code.' };
@@ -428,6 +454,13 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     if (teacher.status === 'archived') {
       return { success: false, error: 'This teacher account is currently archived. Please contact the Principal.' };
     }
+    try {
+      // Anonymous Firebase session so Firestore security rules (which now
+      // require authentication) accept this device's read/write traffic.
+      await signInTeacherSession();
+    } catch (err: any) {
+      return { success: false, error: mapAuthError(err?.code) };
+    }
     setCurrentUser(teacher);
     setAdminImpersonation(null);
     logActivity('LOGIN_TEACHER', `Teacher ${teacher.name} (${teacher.teacherCode}) logged in`);
@@ -438,6 +471,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     if (currentUser) {
       logActivity('LOGOUT', `${currentUser.name} logged out`);
     }
+    void signOutFirebase();
     setCurrentUser(null);
     setAdminImpersonation(null);
   };

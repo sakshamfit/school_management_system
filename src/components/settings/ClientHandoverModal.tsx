@@ -274,7 +274,7 @@ export const ClientHandoverModal: React.FC<ClientHandoverModalProps> = ({
                   <div className="flex items-center space-x-2">
                     <ShieldCheck className="h-4 w-4 text-[#0066cc] shrink-0" />
                     <h5 className="font-semibold text-xs text-[#1d1d1f]">
-                      Principal / Headmaster Super Admin Credentials
+                      Principal / Headmaster Super Admin Access
                     </h5>
                   </div>
                   <span className="text-[11px] bg-[#0066cc]/10 text-[#0066cc] font-semibold px-2 py-0.5 rounded-full">
@@ -282,7 +282,7 @@ export const ClientHandoverModal: React.FC<ClientHandoverModalProps> = ({
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="grid grid-cols-1 gap-3 text-xs">
                   <div className="bg-[#f5f5f7] p-3 rounded-xl flex items-center justify-between border border-[#e5e5ea]">
                     <div>
                       <span className="text-[10px] text-[#86868b] block font-semibold">LOGIN EMAIL</span>
@@ -296,17 +296,14 @@ export const ClientHandoverModal: React.FC<ClientHandoverModalProps> = ({
                     </button>
                   </div>
 
-                  <div className="bg-[#f5f5f7] p-3 rounded-xl flex items-center justify-between border border-[#e5e5ea]">
-                    <div>
-                      <span className="text-[10px] text-[#86868b] block font-semibold">LOGIN PASSWORD</span>
-                      <span className="font-mono text-[#1d1d1f] font-semibold">9931066436@</span>
-                    </div>
-                    <button
-                      onClick={() => copyText('9931066436@', 'p_pass')}
-                      className="text-[#0066cc] hover:underline text-[11px] font-semibold ml-2"
-                    >
-                      {copiedField === 'p_pass' ? <Check className="h-3.5 w-3.5 text-[#30d158]" /> : <Copy className="h-3.5 w-3.5" />}
-                    </button>
+                  <div className="bg-emerald-50 p-3 rounded-xl border border-emerald-200 text-emerald-800">
+                    <span className="text-[10px] block font-semibold">LOGIN PASSWORD</span>
+                    <p className="mt-1 text-[11px] leading-relaxed">
+                      Managed securely in <span className="font-semibold">Firebase Authentication</span> —
+                      it is never stored in this app, the database, or this handover sheet. Reset it via
+                      the normal email/password reset flow if needed. Hand over credentials using a
+                      secure channel only, never in screenshots or group chats.
+                    </p>
                   </div>
                 </div>
               </div>
